@@ -57,38 +57,42 @@ export default function CategoriasPage() {
 
   // Siempre calcular el conteo real desde los productos en localStorage
   const finalCategories = useMemo(() => {
+    if (!apiCategories || apiCategories.length === 0) return [];
     // Contar productos por categoría
     const productCountMap = new Map<string, number>();
     const categoryImageMap = new Map<string, string>();
-    
     products.forEach(p => {
-      const cat = p.category || 'Sin categoría';
-      productCountMap.set(cat, (productCountMap.get(cat) || 0) + 1);
-      // Usar la imagen del producto si no tenemos una categoría oficial
-      if (!categoryImageMap.has(cat) && p.image) {
-        categoryImageMap.set(cat, p.image);
+      if (Array.isArray(p.categories)) {
+        p.categories.forEach(cat => {
+          productCountMap.set(cat, (productCountMap.get(cat) || 0) + 1);
+          if (!categoryImageMap.has(cat) && p.image) {
+            categoryImageMap.set(cat, p.image);
+          }
+        });
       }
     });
-
     // Mostrar todas las categorías oficiales, tengan productos o no
     const result: PublicCategory[] = [];
-    
     // Agregar todas las categorías oficiales con sus conteos
-    if (apiCategories) {
-      apiCategories.forEach(apiCat => {
-        const count = productCountMap.get(apiCat.name) || 0;
-        result.push({
-          ...apiCat,
-          count
-        });
+    apiCategories.forEach(apiCat => {
+      const count = productCountMap.get(apiCat.name) || 0;
+      result.push({
+        ...apiCat,
+        count
       });
-    }
-
+    });
     return result.sort((a, b) => a.name.localeCompare(b.name));
   }, [products, apiCategories]);
 
   const showLoading = loading || productsLoading;
   const display = finalCategories;
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500"><span className="animate-pulse">Cargando categorías...</span></div>;
+  }
+  if (!apiCategories || apiCategories.length === 0) {
+    return <div className="p-8 text-center text-gray-500">No se encontraron categorías.</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowUpIcon, ArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/contexts/ToastContext";
 
 // Tipo normalizado que usará la tabla
 interface Order {
@@ -19,6 +20,9 @@ interface Order {
 type RawOrder = any;
 
 export default function AdminOrdersPage() {
+  // ...existing code...
+  // ...existing code...
+  const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -80,6 +84,13 @@ export default function AdminOrdersPage() {
     });
   }, [orders, searchTerm, statusFilter, dateFrom, dateTo]);
 
+  // Mostrar toast si no hay resultados
+  useEffect(() => {
+    if (filteredOrders.length === 0) {
+      showToast('No se encontraron pedidos', 'warning');
+    }
+  }, [filteredOrders.length, showToast]);
+
   const sortedOrders = useMemo(() => {
     const arr = [...filteredOrders];
     arr.sort((a, b) => {
@@ -111,11 +122,11 @@ export default function AdminOrdersPage() {
   };
 
   const paginate = (page: number) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   return (
-    <div className="p-6 space-y-8">
+  <div className="p-6 space-y-8" aria-label="Lista de pedidos">
       <div className="flex flex-col gap-4">
         <div className="grid gap-2 md:grid-cols-5">
           <input
@@ -150,8 +161,9 @@ export default function AdminOrdersPage() {
             placeholder="Hasta"
           />
           <button
-            onClick={() => { setSearchTerm(""); setStatusFilter("Todos"); setDateFrom(""); setDateTo(""); setCurrentPage(1); }}
+            onClick={() => { setSearchTerm(""); setStatusFilter("Todos"); setDateFrom(""); setDateTo(""); setCurrentPage(1); showToast('Filtros limpiados', 'info'); }}
             className="border rounded px-3 py-2 text-sm hover:bg-gray-50"
+            aria-label="Limpiar filtros"
           >Limpiar</button>
         </div>
         <div className="text-xs md:text-sm text-gray-500">

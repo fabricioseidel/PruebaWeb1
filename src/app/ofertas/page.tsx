@@ -23,11 +23,14 @@ export default function OfertasPage() {
   const loading = productsLoading || categoriesLoading;
 
   const filtered = offerProducts.filter(p => {
-    const catOk = category === "Todas" || p.category === category;
+    const catOk = category === "Todas" || (Array.isArray(p.categories) && p.categories.includes(category));
     const searchOk = p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
     return catOk && searchOk;
   });
 
+  if (loading) {
+    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center"><span className="animate-pulse text-gray-500">Cargando ofertas...</span></div>;
+  }
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
@@ -49,9 +52,7 @@ export default function OfertasPage() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-gray-500">Cargando ofertas...</p>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-lg shadow-sm">
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay ofertas disponibles</h3>
           <p className="text-gray-500 mb-4">Vuelve más tarde o revisa todos los productos.</p>
@@ -76,13 +77,12 @@ export default function OfertasPage() {
                     <h3 className="text-lg font-medium text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
                   </Link>
                   <div className="flex items-center gap-2 mb-1 text-[11px] text-gray-500">
-                    <span>👁 {product.viewCount ?? 0}</span>
+                    <span>👁️ {product.viewCount ?? 0}</span>
                     <span>🛒 {product.orderClicks ?? 0}</span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-2 flex items-center gap-2">
-                    <span>{product.category}</span>
-                    {product.stock <= 5 && <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Pocas</span>}
-                  </p>
+                  {Array.isArray(product.categories) && product.categories.length > 0 && (
+                    <div className="mt-2 text-xs text-gray-400">Categorías: {product.categories.join(', ')}</div>
+                  )}
                   <div className="mb-4 flex items-center gap-2">
                     <p className="text-blue-600 font-semibold">$ {product.price.toFixed(2)}</p>
                     {product.priceOriginal && product.priceOriginal > product.price && (

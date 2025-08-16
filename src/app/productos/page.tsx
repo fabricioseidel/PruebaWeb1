@@ -21,42 +21,46 @@ export default function ProductsPage() {
 
   const loading = productsLoading || categoriesLoading;
 
+  // Filtrar y ordenar productos
+  const sortedProducts = useMemo(() => {
+    let filtered = products;
+    if (selectedCategory !== "Todas") {
+      filtered = filtered.filter(p => Array.isArray(p.categories) && p.categories.includes(selectedCategory));
+    }
+    if (searchTerm) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    switch (sortBy) {
+      case "price-asc":
+        filtered = [...filtered].sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        filtered = [...filtered].sort((a, b) => b.price - a.price);
+        break;
+      case "name-asc":
+        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        filtered = [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      default:
+        break;
+    }
+    return filtered;
+  }, [products, selectedCategory, searchTerm, sortBy]);
+
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-gray-500">Cargando productos...</p>
-      </div>
-    );
+    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center"><span className="animate-pulse text-gray-500">Cargando productos...</span></div>;
   }
-
-  // Filtrar productos por categoría y búsqueda
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === "Todas" || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  // Ordenar productos
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "name-asc") return a.name.localeCompare(b.name);
-    if (sortBy === "name-desc") return b.name.localeCompare(a.name);
-    return 0; // default
-  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Productos</h1>
-      
       {/* Filtros y búsqueda */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              Categoría
-            </label>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
             <select
               id="category"
               className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -68,11 +72,8 @@ export default function ProductsPage() {
               ))}
             </select>
           </div>
-          
           <div>
-            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
-              Ordenar por
-            </label>
+            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">Ordenar por</label>
             <select
               id="sort"
               className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -86,11 +87,8 @@ export default function ProductsPage() {
               <option value="name-desc">Nombre: Z-A</option>
             </select>
           </div>
-          
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar
-            </label>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
             <Input
               id="search"
               type="text"
@@ -101,14 +99,14 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Resultados */}
       <div className="mb-4">
         <p className="text-gray-600">
           {sortedProducts.length} {sortedProducts.length === 1 ? 'producto' : 'productos'} encontrados
         </p>
       </div>
-      
+
       {/* Lista de productos */}
       {sortedProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -132,10 +130,9 @@ export default function ProductsPage() {
                   <span>👁 {product.viewCount ?? 0}</span>
                   <span>🛒 {product.orderClicks ?? 0}</span>
                 </div>
-                <p className="text-gray-500 mb-2 flex items-center gap-2">
-                  <span>{product.category}</span>
-                  {product.stock <= 5 && <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Pocas</span>}
-                </p>
+                {Array.isArray(product.categories) && product.categories.length > 0 && (
+                  <div className="mt-2 text-xs text-gray-400">Categorías: {product.categories.join(', ')}</div>
+                )}
                 <div className="mb-4 flex items-center gap-2">
                   <p className="text-blue-600 font-semibold">$ {product.price.toFixed(2)}</p>
                   {product.priceOriginal && product.priceOriginal > product.price && (

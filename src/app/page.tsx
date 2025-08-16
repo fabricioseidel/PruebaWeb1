@@ -12,16 +12,20 @@ export default function Home() {
 
   const categoriesMap: Record<string, { image: string; count: number }> = {};
   products.forEach(p => {
-    const key = p.category;
-    if (!categoriesMap[key]) {
-      categoriesMap[key] = {
-        image: p.image || p.gallery?.[0] || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop",
-        count: 0
-      };
+    if (Array.isArray(p.categories)) {
+      p.categories.forEach(cat => {
+        if (!categoriesMap[cat]) {
+          categoriesMap[cat] = {
+            image: p.image || p.gallery?.[0] || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop",
+            count: 0
+          };
+        }
+        categoriesMap[cat].count += 1;
+      });
     }
-    categoriesMap[key].count += 1;
   });
   const featuredCategories = Object.entries(categoriesMap)
+    .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 8)
     .map(([name, data], idx) => ({ id: String(idx + 1), name, image: data.image, slug: name.toLowerCase() }));
 

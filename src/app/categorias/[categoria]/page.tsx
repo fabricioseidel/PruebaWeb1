@@ -10,7 +10,7 @@ import { useCategories } from "@/hooks/useCategories";
 
 export default function CategoriaDetallePage() {
   const params = useParams();
-  const raw = params?.categoria as string | undefined;
+    const raw = params?.categoria as string | undefined;
   const decoded = raw ? decodeURIComponent(raw) : "";
   const { products, loading: productsLoading } = useProducts();
   const { categories, loading: categoriesLoading } = useCategories();
@@ -18,32 +18,48 @@ export default function CategoriaDetallePage() {
   const [sortBy, setSortBy] = useState("default");
   const [search, setSearch] = useState("");
 
-  // Encontrar la categoría por slug o por nombre
-  const category = useMemo(() => {
-    return categories.find(cat => 
-      cat.slug === decoded || 
-      cat.name === decoded
-    );
-  }, [categories, decoded]);
-
-  // Filtrar productos por el nombre de la categoría
-  const categoryName = category?.name || decoded;
-  const items = useMemo(() => 
-    products.filter(p => Array.isArray(p.categories) && p.categories.includes(categoryName)), 
-    [products, categoryName]
-  );
-
   const loading = productsLoading || categoriesLoading;
 
-  const filtered = items.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase()));
+  // Encontrar la categoría por slug o por nombre
+  const categoryName = useMemo(() => {
+    if (!categories) return decoded;
+    const found = categories.find(c => c.slug === raw || c.name === decoded);
+    return found?.name || decoded;
+  }, [categories, raw, decoded]);
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sortBy === 'price-asc') return a.price - b.price;
-    if (sortBy === 'price-desc') return b.price - a.price;
-    if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
-    if (sortBy === 'name-desc') return b.name.localeCompare(a.name);
-    return 0;
-  });
+  // Filtrar productos por categoría
+  const filtered = useMemo(() => {
+    return products.filter(p => Array.isArray(p.categories) && p.categories.includes(categoryName));
+  }, [products, categoryName]);
+
+  // Ordenar y buscar
+  const sorted = useMemo(() => {
+    let arr = [...filtered];
+    if (search) {
+      arr = arr.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase()));
+    }
+    switch (sortBy) {
+      case "price-asc":
+        arr.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        arr.sort((a, b) => b.price - a.price);
+        break;
+      case "name-asc":
+        arr.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        arr.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      default:
+        break;
+    }
+    return arr;
+  }, [filtered, sortBy, search]);
+
+  if (loading) {
+    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center"><span className="animate-pulse text-gray-500">Cargando productos...</span></div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -72,9 +88,7 @@ export default function CategoriaDetallePage() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-gray-500">Cargando productos...</p>
-      ) : sorted.length === 0 ? (
+      {sorted.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-lg shadow-sm">
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay productos</h3>
           <p className="text-gray-500 mb-4">No encontramos productos que coincidan con tu búsqueda.</p>
@@ -84,17 +98,23 @@ export default function CategoriaDetallePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {sorted.map(product => (
             <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              <Link href={`/productos/${product.slug}`}>
-                <div className="h-48 overflow-hidden">
+              <Link href={`/productos/${product.slug}`}> 
+                <div className="relative h-48 overflow-hidden">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                 </div>
               </Link>
               <div className="p-4">
-                <Link href={`/productos/${product.slug}`}>
+                <Link href={`/productos/${product.slug}`}> 
                   <h3 className="text-lg font-medium text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
                 </Link>
-                <p className="text-blue-600 font-semibold mb-4">$ {product.price.toFixed(2)}</p>
-                <Button fullWidth onClick={() => addToCart(product)}>Agregar al Carrito</Button>
+                <div className="flex items-center gap-2 mb-1 text-[11px] text-gray-500">
+                  <span>👁️ {product.viewCount ?? 0}</span>
+                  <span>🛒 {product.orderClicks ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-lg font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                  <Button onClick={() => addToCart(product)}>Agregar</Button>
+                </div>
               </div>
             </div>
           ))}
@@ -102,4 +122,5 @@ export default function CategoriaDetallePage() {
       )}
     </div>
   );
-}
+
+  }

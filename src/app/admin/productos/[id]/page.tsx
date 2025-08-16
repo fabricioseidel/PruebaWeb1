@@ -98,16 +98,16 @@ export default function EditProductPage() {
       const galleryUrls = await Promise.all((form.gallery || []).map(g => uploadIfDataUrl(g)));
 
       updateProduct(product.id, {
-        name: form.name.trim(),
-        price: Number(form.price),
-        image: imageUrl,
-        description: form.description.trim(),
-        category: form.category.trim(),
-        stock: Number(form.stock) || 0,
-        featured: form.featured,
-        gallery: galleryUrls,
-        features: form.features.split('\n').map(f => f.trim()).filter(Boolean),
-        slug: form.slug.trim(),
+  name: form.name.trim(),
+  price: Number(form.price),
+  image: imageUrl,
+  description: form.description.trim(),
+  categories: form.categories,
+  stock: Number(form.stock) || 0,
+  featured: form.featured,
+  gallery: galleryUrls,
+  features: form.features.split('\n').map(f => f.trim()).filter(Boolean),
+  slug: form.slug.trim(),
       });
       showToast('Producto actualizado', 'success');
       // Redirigir de vuelta a la lista de productos después de actualizar
@@ -160,14 +160,35 @@ export default function EditProductPage() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-          <select name="category" value={form.category} onChange={handleChange} className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Categorías *</label>
+          <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
             {categories.length > 0 ? categories.map(c => (
-              <option key={c.id} value={c.name}>{c.name}</option>
+              <label key={c.id} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={form.categories.includes(c.name)}
+                  onChange={e => {
+                    if (e.target.checked) {
+                      setForm(prev => prev ? { ...prev, categories: [...prev.categories, c.name] } : prev);
+                    } else {
+                      setForm(prev => prev ? { ...prev, categories: prev.categories.filter(cat => cat !== c.name) } : prev);
+                    }
+                  }}
+                />
+                <span className="text-sm text-gray-700">{c.name}</span>
+              </label>
             )) : (
-              <option value={form.category}>{form.category}</option>
+              <span className="italic text-gray-400">No hay categorías disponibles</span>
             )}
-          </select>
+          </div>
+          {form.categories.length > 0 && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-600">
+                Seleccionadas: <span className="font-medium">{form.categories.join(", ")}</span>
+              </p>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>

@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingCartIcon, UserIcon } from "@heroicons/react/24/outline";
@@ -8,7 +9,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "../../contexts/CartContext";
 
 const navigation = [
   { name: "Inicio", href: "/" },

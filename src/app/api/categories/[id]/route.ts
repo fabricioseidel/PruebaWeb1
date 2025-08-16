@@ -11,11 +11,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: { _count: { select: { products: true } } },
-    });
+    const category = await prisma.category.findUnique({ where: { id } });
     if (!category) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    // Contar asociaciones en ProductCategory
+    const productsCount = await prisma.productCategory.count({ where: { categoryId: id } });
     return NextResponse.json({
       id: category.id,
       name: category.name,
@@ -25,7 +24,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       isActive: category.isActive,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
-      productsCount: category._count.products,
+      productsCount,
     });
   } catch (e) {
     console.error(e);
@@ -94,9 +93,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...(description !== undefined ? { description: description ? String(description) : null } : {}),
         ...(isActive !== undefined ? { isActive: Boolean(isActive) } : {}),
       },
-      include: { _count: { select: { products: true } } },
     });
-
+    // Contar asociaciones en ProductCategory
+    const productsCount = await prisma.productCategory.count({ where: { categoryId: id } });
     return NextResponse.json({
       id: updated.id,
       name: updated.name,
@@ -106,7 +105,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       isActive: updated.isActive,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
-      productsCount: updated._count.products,
+      productsCount,
     });
   } catch (e: any) {
     if (e.code === 'P2002') {
@@ -131,8 +130,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
   try {
     const { id } = await params;
-    const productCount = await prisma.product.count({ where: { categoryId: id } });
-    if (productCount > 0) {
+    // Obtener el nombre de la categoría
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) {
+      return NextResponse.json({ error: "Categoría no encontrada" }, { status: 404 });
+    }
+    // Buscar asociaciones en la tabla ProductCategory
+    const associationCount = await prisma.productCategory.count({ where: { categoryId: id } });
+    if (associationCount > 0) {
       return NextResponse.json({ error: "No se puede eliminar una categoría con productos asociados" }, { status: 400 });
     }
     await prisma.category.delete({ where: { id } });

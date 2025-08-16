@@ -19,18 +19,13 @@ import { useToast } from "@/contexts/ToastContext";
 import { useConfirm } from "@/contexts/ConfirmContext";
 
 // Categorías disponibles
-const categories = [
-  { id: "1", name: "Todas" },
-  { id: "2", name: "Electrónica" },
-  { id: "3", name: "Moda" },
-  { id: "4", name: "Hogar" },
-  { id: "5", name: "Deportes" },
-];
+import { useCategories } from "@/hooks/useCategories";
 
 export default function AdminProductsPage() {
   const { products, deleteProduct } = useProducts();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const { categories, loading: categoriesLoading } = useCategories();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [sortField, setSortField] = useState("name");
@@ -42,15 +37,13 @@ export default function AdminProductsPage() {
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todas" || product.category === selectedCategory;
-    
+    const matchesCategory = selectedCategory === "Todas" || (Array.isArray(product.categories) && product.categories.includes(selectedCategory));
     return matchesSearch && matchesCategory;
   });
 
   // Ordenar productos
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     let comparison = 0;
-    
     if (sortField === "name") {
       comparison = a.name.localeCompare(b.name);
     } else if (sortField === "price") {
@@ -58,11 +51,13 @@ export default function AdminProductsPage() {
     } else if (sortField === "stock") {
       comparison = a.stock - b.stock;
     } else if (sortField === "category") {
-      comparison = a.category.localeCompare(b.category);
+      // Ordenar por la primera categoría si hay varias
+      const aCat = Array.isArray(a.categories) && a.categories.length > 0 ? a.categories[0] : "";
+      const bCat = Array.isArray(b.categories) && b.categories.length > 0 ? b.categories[0] : "";
+      comparison = aCat.localeCompare(bCat);
     } else if (sortField === "createdAt") {
       comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     }
-    
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
@@ -118,6 +113,20 @@ export default function AdminProductsPage() {
     }
   };
 
+  if (categoriesLoading) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <span className="animate-pulse">Cargando categorías...</span>
+      </div>
+    );
+  }
+  if (!categories || categories.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        No se encontraron categorías. <Link href="/admin/categorias" className="text-blue-600 hover:underline">Crear una categoría</Link>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
@@ -160,6 +169,7 @@ export default function AdminProductsPage() {
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
+              <option value="Todas">Todas</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.name}>
                   {category.name}
@@ -167,10 +177,17 @@ export default function AdminProductsPage() {
               ))}
             </select>
           </div>
+          <div className="flex items-center justify-end">
+            <Button
+              onClick={() => { setSearchTerm(""); setSelectedCategory("Todas"); setCurrentPage(1); showToast('Filtros limpiados', 'info'); }}
+              aria-label="Limpiar filtros"
+              className="border rounded px-3 py-2 text-sm hover:bg-gray-50"
+            >Limpiar</Button>
+          </div>
           
           <div className="text-right">
             <span className="text-sm text-gray-500">
-              Mostrando {currentItems.length} de {filteredProducts.length} productos
+              {filteredProducts.length === 0 ? (showToast('No se encontraron productos', 'warning'), 'Sin resultados') : `Mostrando ${currentItems.length} de ${filteredProducts.length} productos`}
             </span>
           </div>
         </div>
@@ -284,7 +301,11 @@ export default function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{product.category}</div>
+                    <div className="text-sm text-gray-900">
+                      {Array.isArray(product.categories) && product.categories.length > 0
+                        ? product.categories.join(", ")
+                        : <span className="italic text-gray-400">Sin categoría</span>}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>

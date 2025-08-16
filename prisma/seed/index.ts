@@ -1,5 +1,5 @@
-import { PrismaClient } from '../../src/generated/prisma';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -87,6 +87,7 @@ async function main() {
 
     // Crear productos
     if (electronica && moda && deportes) {
+
       const products = [
         {
           name: 'Smartphone XYZ',
@@ -96,7 +97,7 @@ async function main() {
           slug: 'smartphone-xyz',
           images: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=2127&auto=format&fit=crop',
           featured: true,
-          categoryId: electronica.id,
+          categories: [electronica],
         },
         {
           name: 'Auriculares Bluetooth',
@@ -106,7 +107,7 @@ async function main() {
           slug: 'auriculares-bluetooth',
           images: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop',
           featured: true,
-          categoryId: electronica.id,
+          categories: [electronica],
         },
         {
           name: 'Zapatillas Running',
@@ -116,7 +117,7 @@ async function main() {
           slug: 'zapatillas-running',
           images: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop',
           featured: true,
-          categoryId: deportes.id,
+          categories: [deportes],
         },
         {
           name: 'Smart TV 43"',
@@ -126,7 +127,7 @@ async function main() {
           slug: 'smart-tv-43',
           images: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=2070&auto=format&fit=crop',
           featured: true,
-          categoryId: electronica.id,
+          categories: [electronica],
         },
         {
           name: 'Camiseta Deportiva',
@@ -136,7 +137,7 @@ async function main() {
           slug: 'camiseta-deportiva',
           images: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1974&auto=format&fit=crop',
           featured: false,
-          categoryId: deportes.id,
+          categories: [deportes],
         },
         {
           name: 'Jeans Slim Fit',
@@ -146,17 +147,34 @@ async function main() {
           slug: 'jeans-slim-fit',
           images: 'https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1926&auto=format&fit=crop',
           featured: false,
-          categoryId: moda.id,
+          categories: [moda],
         },
       ];
 
       for (const product of products) {
+        const { categories, ...productData } = product;
         const createdProduct = await prisma.product.upsert({
-          where: { slug: product.slug },
+          where: { slug: productData.slug },
           update: {},
-          create: product,
+          create: productData,
         });
         console.log(`Producto creado: ${createdProduct.name}`);
+        // Crear relaciones en ProductCategory
+        for (const category of categories) {
+          await prisma.productCategory.upsert({
+            where: {
+              productId_categoryId: {
+                productId: createdProduct.id,
+                categoryId: category.id,
+              },
+            },
+            update: {},
+            create: {
+              productId: createdProduct.id,
+              categoryId: category.id,
+            },
+          });
+        }
       }
     }
 

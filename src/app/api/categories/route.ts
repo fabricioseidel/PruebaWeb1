@@ -1,16 +1,31 @@
+// ...existing code...
+export * from './route';
+
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma";
 import fs from 'fs';
 import path from 'path';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "../../../lib/auth";
 
 // GET /api/categories
 export async function GET() {
   try {
+    // Obtener todos los productos y categorías
     const categories = await prisma.category.findMany({
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { products: true } } },
+    });
+    // Obtener la relación producto-categoría
+    const productCategories = await prisma.productCategory.findMany({
+      include: { category: true }
+    });
+    // Calcular el conteo de productos por categoría
+    const categoryCounts: Record<string, number> = {};
+    categories.forEach(cat => { categoryCounts[cat.name] = 0; });
+    productCategories.forEach(pc => {
+      if (pc.category && categoryCounts[pc.category.name] !== undefined) {
+        categoryCounts[pc.category.name]++;
+      }
     });
     return NextResponse.json(categories.map(c => ({
       id: c.id,
@@ -21,7 +36,7 @@ export async function GET() {
       isActive: c.isActive,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
-      productsCount: c._count.products,
+      productsCount: categoryCounts[c.name] || 0,
     })));
   } catch (e) {
     console.error(e);
@@ -95,11 +110,10 @@ export async function POST(req: Request) {
       data: {
         name: String(name).trim(),
         slug: finalSlug,
-  description: description ? String(description) : null,
-  image: image ? String(image) : null,
+        description: description ? String(description) : null,
+        image: image ? String(image) : null,
         isActive: isActive ?? true,
-      },
-      include: { _count: { select: { products: true } } },
+      }
     });
 
     return NextResponse.json({
@@ -111,7 +125,7 @@ export async function POST(req: Request) {
       isActive: category.isActive,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
-      productsCount: category._count.products,
+      productsCount: 0,
     }, { status: 201 });
   } catch (e) {
     console.error(e);

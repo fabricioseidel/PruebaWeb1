@@ -13,6 +13,7 @@ import {
   PrinterIcon
 } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/Button";
+import { useToast } from "@/contexts/ToastContext";
 
 type OrderItem = { id: string; name: string; price: number; quantity: number; image: string };
 type OrderDetail = { id: string; date: string; customer: { name: string; email: string; phone: string }; shipping: { address: string; city: string; postalCode: string; country: string }; payment: { method: string; transactionId: string; status: string }; items: OrderItem[]; status: string; subtotal: number; shippingCost: number; taxes: number; total: number; notes: string };
@@ -32,6 +33,7 @@ function OrderStatusBadge({ status }: { status: string }) {
 }
 
 export default function OrderDetailClient({ params }: { params: { id: string } }) {
+  const { showToast } = useToast();
   const { id } = params;
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,14 +63,36 @@ export default function OrderDetailClient({ params }: { params: { id: string } }
 
   const handleStatusChange = async () => {
     if (order && newStatus !== order.status) {
-      try { setSaving(true); await new Promise(r => setTimeout(r, 200)); setOrder({ ...order, status: newStatus }); try { const raw = localStorage.getItem('orders'); if (raw) { const list = JSON.parse(raw); if (Array.isArray(list)) { const updated = list.map((o: any) => o.id === order.id ? { ...o, status: newStatus } : o); localStorage.setItem('orders', JSON.stringify(updated)); } } } catch {} } catch (error) { console.error("Error al actualizar el estado:", error); } finally { setSaving(false); }
+      try {
+        setSaving(true);
+        await new Promise(r => setTimeout(r, 200));
+        setOrder({ ...order, status: newStatus });
+        try {
+          const raw = localStorage.getItem('orders');
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const updated = list.map((o: any) => o.id === order.id ? { ...o, status: newStatus } : o);
+              localStorage.setItem('orders', JSON.stringify(updated));
+              showToast('Estado actualizado correctamente', 'success');
+            }
+          }
+        } catch {
+          showToast('Error al guardar el estado en localStorage', 'error');
+        }
+      } catch (error) {
+        console.error("Error al actualizar el estado:", error);
+        showToast('Error al actualizar el estado', 'error');
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
   const handlePrintInvoice = () => { window.print(); };
 
   if (loading) return (<div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>);
-  if (!order) return (<div className="text-center py-12"><h2 className="text-2xl font-bold text-gray-900">Pedido no encontrado</h2><p className="mt-2 text-gray-600">El pedido que buscas no existe o ha sido eliminado.</p><div className="mt-6"><Link href="/admin/pedidos"><Button><ArrowLeftIcon className="h-5 w-5 mr-2" />Volver a pedidos</Button></Link></div></div>);
+  if (!order) return (<div className="text-center py-12"><h2 className="text-2xl font-bold text-gray-900">Pedido no encontrado</h2><p className="mt-2 text-gray-600">El pedido que buscas no existe o ha sido eliminado.</p><div className="mt-6"><Link href="/admin/pedidos"><Button aria-label="Volver a pedidos"><ArrowLeftIcon className="h-5 w-5 mr-2" />Volver a pedidos</Button></Link></div></div>);
 
   return (
     <div className="pb-12"> 
