@@ -40,7 +40,7 @@ Una plataforma de comercio electrónico completa construida con Next.js 15, Type
 ### 1. Clonar el repositorio
 ```bash
 git clone https://github.com/fabricioseidel/PruebaWeb1.git
-cd tienda-web
+cd PruebaWeb1
 ```
 
 ### 2. Instalar dependencias
