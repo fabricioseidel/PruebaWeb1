@@ -12,6 +12,7 @@ export default function AdminOrdersPage() {
   // ...existing code...
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [sortField, setSortField] = useState<keyof Order | "date">("date");
@@ -26,12 +27,15 @@ export default function AdminOrdersPage() {
     const normalizedOrders = OrderManager.getAllOrders();
     setOrders(normalizedOrders);
     
-    if (normalizedOrders.length === 0) {
-      showToast('No hay pedidos para mostrar', 'info');
-    } else {
-      console.log(`📊 Cargados ${normalizedOrders.length} pedidos`);
+    if (!initialLoadComplete) {
+      setInitialLoadComplete(true);
+      if (normalizedOrders.length === 0) {
+        console.log('ℹ️ No hay pedidos para mostrar');
+      } else {
+        console.log(`📊 Cargados ${normalizedOrders.length} pedidos`);
+      }
     }
-  }, [showToast]);
+  }, [initialLoadComplete]);
   // Memo para evitar recalcular en cada render
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
@@ -55,13 +59,6 @@ export default function AdminOrdersPage() {
       return true;
     });
   }, [orders, searchTerm, statusFilter, dateFrom, dateTo]);
-
-  // Mostrar toast si no hay resultados
-  useEffect(() => {
-    if (filteredOrders.length === 0) {
-      showToast('No se encontraron pedidos', 'warning');
-    }
-  }, [filteredOrders.length, showToast]);
 
   const sortedOrders = useMemo(() => {
     const arr = [...filteredOrders];
