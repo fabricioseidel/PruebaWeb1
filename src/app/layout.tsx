@@ -15,6 +15,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 import DataCleanup from "@/components/DataCleanup";
+import OrderManagerInit from "@/components/OrderManagerInit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
               <ToastProvider>
                 <ConfirmProvider>
                   <DataCleanup />
+                  <OrderManagerInit />
                   <Navbar />
                   <main className="flex-grow">{children}</main>
                   <Footer />

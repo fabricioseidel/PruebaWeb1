@@ -6,49 +6,25 @@ import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/contexts/CartContext";
-
-type Order = {
-  id: string;
-  fecha: string; // YYYY-MM-DD
-  total: number;
-  estado: string;
-  productos: number;
-  items: any[];
-  customer?: string;
-  email?: string;
-  userId?: string; // opcional para futuros filtros
-  createdAt: string; // ISO completo
-  shippingAddress?: {
-    nombre?: string;
-    calle?: string;
-    numero?: string;
-    interior?: string;
-    colonia?: string;
-    ciudad?: string;
-    estado?: string;
-    codigoPostal?: string;
-    telefono?: string;
-  };
-};
+import { OrderManager, Order } from "@/utils/orderManager";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function OrderConfirmationPage() {
   const { cartItems, clearCart } = useCart();
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   
   useEffect(() => {
-    // Solo guardar el pedido si el carrito tiene productos y no existe ya el id en localStorage
+    // Solo guardar el pedido si el carrito tiene productos
     if (cartItems && cartItems.length > 0) {
       const validCartItems = cartItems.filter(item => 
         item && typeof item === 'object' && typeof item.price === 'number' && typeof item.quantity === 'number'
       );
+      
       if (validCartItems.length > 0) {
-        const subtotal = validCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const shippingCost = 10.00;
-        const total = subtotal + shippingCost;
-        const nowISO = new Date().toISOString();
-        // Snapshot de dirección predeterminada del usuario (si existe)
-        let shippingAddress: Order['shippingAddress'] | undefined = undefined;
+        // Obtener dirección de envío
+        let shippingAddress: any = undefined;
         try {
           const defaultAddrRaw = localStorage.getItem('defaultAddress');
           if (defaultAddrRaw) {
@@ -66,83 +42,56 @@ export default function OrderConfirmationPage() {
                 telefono: def.telefono,
               };
             }
-          } else {
-            const addressesRaw = localStorage.getItem('addresses');
-            if (addressesRaw) {
-              const list = JSON.parse(addressesRaw);
-              if (Array.isArray(list) && list.length) {
-                const first = list[0];
-                shippingAddress = {
-                  nombre: first.nombre,
-                  calle: first.calle,
-                  numero: first.numero,
-                  interior: first.interior,
-                  colonia: first.colonia,
-                  ciudad: first.ciudad,
-                  estado: first.estado,
-                  codigoPostal: first.codigoPostal,
-                  telefono: first.telefono,
-                };
-              }
-            }
           }
         } catch {}
 
-        const newOrder: Order = {
-          id: "ORD-" + Math.floor(100000 + Math.random() * 900000),
-          fecha: new Date().toISOString().split("T")[0],
-          total: total,
-          estado: "En proceso",
-          productos: validCartItems.reduce((sum, item) => sum + item.quantity, 0),
-          items: validCartItems.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-            slug: item.slug
-          })),
-          customer: session?.user?.name || 'Invitado',
-          email: session?.user?.email || undefined,
-          userId: (session as any)?.user?.id || undefined,
-          createdAt: nowISO,
-          shippingAddress,
-        };
-        // Solo guardar si no existe ya un pedido con los mismos productos y fecha
-        if (typeof window !== 'undefined') {
-          const existingOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-          const last = existingOrders[0];
-          let isQuickDuplicate = false;
-          if (last) {
-            const lastTime = last.createdAt ? new Date(last.createdAt).getTime() : 0;
-            const nowTime = new Date(newOrder.createdAt).getTime();
-            // Solo bloquear si es el MISMO contenido en <=5s (probable doble submit)
-            if (nowTime - lastTime <= 5000 && JSON.stringify(last.items) === JSON.stringify(newOrder.items)) {
-              isQuickDuplicate = true;
-            }
-          }
-          if (!isQuickDuplicate) {
-            localStorage.setItem('orders', JSON.stringify([newOrder, ...existingOrders]));
-          }
+        // Crear el pedido usando OrderManager
+        try {
+          const newOrder = OrderManager.createOrder({
+            items: validCartItems.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+              slug: item.slug
+            })),
+            customer: session?.user?.name || 'Invitado',
+            email: session?.user?.email,
+            userId: (session as any)?.user?.id,
+            shippingAddress,
+            paymentMethod: 'Pendiente de seleccionar',
+            shippingCost: 10.00
+          });
+
+          setOrder(newOrder);
+          clearCart();
+          showToast(`Pedido ${newOrder.id} creado exitosamente`, 'success');
+          
+          console.log(`✅ Nuevo pedido creado: ${newOrder.id}`);
+        } catch (error) {
+          console.error('Error al crear pedido:', error);
+          showToast('Error al crear el pedido', 'error');
         }
-        setOrder(newOrder);
-        clearCart();
         return;
       }
     }
+    
     // Si no hay items válidos en el carrito, crear un pedido ficticio para mostrar
-    const orderNumber = "ORD-" + Math.floor(100000 + Math.random() * 900000);
-    setOrder({
+    const orderNumber = OrderManager.generateOrderId();
+    const dummyOrder: Order = {
       id: orderNumber,
-      fecha: new Date().toISOString().split("T")[0],
-      total: 0,
-      estado: "Completado",
-      productos: 0,
-      items: [],
+      date: new Date().toISOString().split("T")[0],
       createdAt: new Date().toISOString(),
-  shippingAddress: undefined,
-    });
-  }, [cartItems, clearCart]);
+      total: 0,
+      subtotal: 0,
+      shippingCost: 0,
+      status: "Completado",
+      items: [],
+      customer: "Cliente de ejemplo"
+    };
+    setOrder(dummyOrder);
+  }, [cartItems, clearCart, session, showToast]);
 
   if (!order) {
     return (
@@ -174,7 +123,7 @@ export default function OrderConfirmationPage() {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Fecha de pedido</h3>
-              <p className="text-gray-900">{new Date(order.fecha).toLocaleDateString()}</p>
+              <p className="text-gray-900">{new Date(order.date).toLocaleDateString()}</p>
             </div>
             
             <div>
@@ -184,7 +133,7 @@ export default function OrderConfirmationPage() {
             
             <div>
               <h3 className="text-sm font-medium text-gray-500">Productos</h3>
-              <p className="text-gray-900">{order.productos} artículos</p>
+              <p className="text-gray-900">{order.items.reduce((sum, item) => sum + item.quantity, 0)} artículos</p>
             </div>
           </div>
         </div>

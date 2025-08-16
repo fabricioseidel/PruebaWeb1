@@ -14,9 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/Button";
 import { useToast } from "@/contexts/ToastContext";
-
-type OrderItem = { id: string; name: string; price: number; quantity: number; image: string };
-type OrderDetail = { id: string; date: string; customer: { name: string; email: string; phone: string }; shipping: { address: string; city: string; postalCode: string; country: string }; payment: { method: string; transactionId: string; status: string }; items: OrderItem[]; status: string; subtotal: number; shippingCost: number; taxes: number; total: number; notes: string };
+import { OrderManager, Order } from "@/utils/orderManager";
 
 function OrderStatusBadge({ status }: { status: string }) {
   let bgColor = "";
@@ -35,50 +33,44 @@ function OrderStatusBadge({ status }: { status: string }) {
 export default function OrderDetailClient({ params }: { params: { id: string } }) {
   const { showToast } = useToast();
   const { id } = params;
-  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newStatus, setNewStatus] = useState("");
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('orders');
-      if (!raw) { setLoading(false); return; }
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) { setLoading(false); return; }
-      const found = arr.find((o: any) => o.id === id);
-      if (!found) { setLoading(false); return; }
-      const date = (found.date || found.fecha || new Date().toISOString()).toString();
-      const itemsArray = Array.isArray(found.items) ? found.items : [];
-      const addr = found.shippingAddress || {};
-      const items: OrderItem[] = itemsArray.map((it: any, idx: number) => ({ id: it.id?.toString() || `ITEM-${idx}`, name: it.name || it.title || `Producto ${idx+1}`, price: Number(it.price) || 0, quantity: Number(it.quantity) || 1, image: it.image || '/file.svg' }));
-      const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);
-      const shippingCost = 10;
-      const taxes = subtotal * 0.19;
-      const total = subtotal + shippingCost;
-      const detail: OrderDetail = { id: found.id, date: date.length > 10 ? date : `${date} 00:00:00`, customer: { name: found.customer || found.cliente || addr.nombre || '-', email: found.email || found.correo || '-', phone: addr.telefono || found.phone || '+00 000 0000' }, shipping: { address: addr.calle ? `${addr.calle} ${addr.numero || ''}${addr.interior ? ' Int. '+addr.interior : ''}`.trim() : (found.address || 'Dirección no especificada'), city: addr.ciudad || found.city || '-', postalCode: addr.codigoPostal || found.postalCode || '-', country: addr.estado || found.country || '-' }, payment: { method: found.paymentMethod || 'No especificado', transactionId: found.transactionId || 'LOCAL-' + found.id, status: 'Aprobado' }, status: found.status || found.estado || 'En proceso', items, subtotal, shippingCost, taxes, total, notes: found.notes || '' };
-      setOrder(detail); setNewStatus(detail.status);
-    } catch (e) { console.error('Error cargando pedido', e); } finally { setLoading(false); }
-  }, [id]);
+      console.log(`🔍 Buscando pedido: ${id}`);
+      const foundOrder = OrderManager.getOrderById(id);
+      
+      if (foundOrder) {
+        setOrder(foundOrder);
+        setNewStatus(foundOrder.status);
+        console.log(`✅ Pedido encontrado: ${foundOrder.id}`);
+      } else {
+        console.warn(`❌ Pedido no encontrado: ${id}`);
+        showToast(`Pedido ${id} no encontrado`, 'error');
+      }
+    } catch (e) {
+      console.error('Error cargando pedido', e);
+      showToast('Error al cargar el pedido', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [id, showToast]);
 
   const handleStatusChange = async () => {
     if (order && newStatus !== order.status) {
       try {
         setSaving(true);
         await new Promise(r => setTimeout(r, 200));
-        setOrder({ ...order, status: newStatus });
-        try {
-          const raw = localStorage.getItem('orders');
-          if (raw) {
-            const list = JSON.parse(raw);
-            if (Array.isArray(list)) {
-              const updated = list.map((o: any) => o.id === order.id ? { ...o, status: newStatus } : o);
-              localStorage.setItem('orders', JSON.stringify(updated));
-              showToast('Estado actualizado correctamente', 'success');
-            }
-          }
-        } catch {
-          showToast('Error al guardar el estado en localStorage', 'error');
+        
+        const success = OrderManager.updateOrderStatus(order.id, newStatus);
+        if (success) {
+          setOrder({ ...order, status: newStatus });
+          showToast('Estado actualizado correctamente', 'success');
+        } else {
+          showToast('Error al actualizar el estado', 'error');
         }
       } catch (error) {
         console.error("Error al actualizar el estado:", error);
@@ -113,10 +105,137 @@ export default function OrderDetailClient({ params }: { params: { id: string } }
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
         <div className="px-6 py-4 border-b border-gray-200"><h2 className="text-xl font-semibold text-gray-900">Productos</h2></div>
         <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th><th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th><th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th><th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th></tr></thead>
-          <tbody className="bg-white divide-y divide-gray-200">{order.items.map((item) => (<tr key={item.id}><td className="px-6 py-4 whitespace-nowrap"><div className="flex items-center"><div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-md overflow-hidden"><img src={item.image} alt={item.name} className="h-full w-full object-cover" onError={(e) => { const img = e.currentTarget as HTMLImageElement; if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = '/file.svg'; } }} /></div><div className="ml-4"><div className="text-sm font-medium text-gray-900">{item.name}</div><div className="text-sm text-gray-500">SKU: {item.id}</div></div></div></td><td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">${item.price.toFixed(2)}</td><td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">{item.quantity}</td><td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</td></tr>))}</tbody></table></div>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {order.items.map((item) => (
+              <tr key={item.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-md overflow-hidden">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="h-full w-full object-cover" 
+                        onError={(e) => { 
+                          const img = e.currentTarget as HTMLImageElement; 
+                          if (!img.dataset.fallback) { 
+                            img.dataset.fallback = '1'; 
+                            img.src = '/file.svg'; 
+                          } 
+                        }} 
+                      />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                      <div className="text-sm text-gray-500">SKU: {item.id}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                  ${item.price.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                  {item.quantity}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody></table></div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden"><div className="px-6 py-4 border-b border-gray-200"><h2 className="text-xl font-semibold text-gray-900">Resumen de costos</h2></div><div className="px-6 py-4"><div className="flex justify-between py-2"><span className="text-sm text-gray-500">Subtotal</span><span className="text-sm font-medium text-gray-900">${order.subtotal.toFixed(2)}</span></div><div className="flex justify-between py-2"><span className="text-sm text-gray-500">Envío</span><span className="text-sm font-medium text-gray-900">${order.shippingCost.toFixed(2)}</span></div><div className="flex justify-between py-2"><span className="text-sm text-gray-500">Impuestos</span><span className="text-sm font-medium text-gray-900">${order.taxes.toFixed(2)}</span></div><div className="flex justify-between py-2 border-t border-gray-200 mt-2"><span className="text-base font-medium text-gray-900">Total</span><span className="text-base font-bold text-gray-900">${order.total.toFixed(2)}</span></div></div></div>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Información del pedido</h2>
+        </div>
+        <div className="px-6 py-4 space-y-6">
+          {/* Información del cliente */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Cliente</h3>
+            <p className="text-sm text-gray-700">{order.customer || 'No especificado'}</p>
+            {order.email && <p className="text-sm text-gray-500">{order.email}</p>}
+          </div>
+          
+          {/* Dirección de envío */}
+          {order.shippingAddress && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">Dirección de envío</h3>
+              <div className="text-sm text-gray-700 space-y-1">
+                {order.shippingAddress.nombre && <p>{order.shippingAddress.nombre}</p>}
+                <p>
+                  {[
+                    order.shippingAddress.calle,
+                    order.shippingAddress.numero,
+                    order.shippingAddress.interior && `Int. ${order.shippingAddress.interior}`
+                  ].filter(Boolean).join(' ')}
+                </p>
+                <p>
+                  {[
+                    order.shippingAddress.ciudad,
+                    order.shippingAddress.estado,
+                    order.shippingAddress.codigoPostal
+                  ].filter(Boolean).join(', ')}
+                </p>
+                {order.shippingAddress.telefono && <p>Tel: {order.shippingAddress.telefono}</p>}
+              </div>
+            </div>
+          )}
+          
+          {/* Información de pago */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Información de pago</h3>
+            <p className="text-sm text-gray-700">{order.paymentMethod || 'No especificado'}</p>
+            {order.transactionId && <p className="text-sm text-gray-500">ID: {order.transactionId}</p>}
+          </div>
+          
+          {/* Actualizar estado */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Estado del pedido</h3>
+            <div className="flex items-center gap-3">
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="En proceso">En proceso</option>
+                <option value="Procesando">Procesando</option>
+                <option value="Enviado">Enviado</option>
+                <option value="Completado">Completado</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+              {newStatus !== order.status && (
+                <Button
+                  onClick={handleStatusChange}
+                  disabled={saving}
+                  size="sm"
+                >
+                  {saving ? 'Guardando...' : 'Actualizar'}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Resumen de costos</h2>
+        </div>
+        <div className="px-6 py-4">
+          <div className="flex justify-between py-2">
+            <span className="text-sm text-gray-500">Subtotal</span>
+            <span className="text-sm font-medium text-gray-900">${order.subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span className="text-sm text-gray-500">Envío</span>
+            <span className="text-sm font-medium text-gray-900">${order.shippingCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-2 border-t border-gray-200 mt-2">
+            <span className="text-base font-medium text-gray-900">Total</span>
+            <span className="text-base font-bold text-gray-900">${order.total.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
