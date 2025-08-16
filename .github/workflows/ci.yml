@@ -2,12 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, chore/hardening-files ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: "file:./dev.db"
+      NEXTAUTH_SECRET: "development-secret-key-not-for-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+    
     steps:
       - uses: actions/checkout@v4
 
@@ -16,20 +23,23 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run -s typecheck || npx tsc --noEmit
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Setup database
+        run: npx prisma db push
+
+      - name: Type check
+        run: npm run typecheck
 
       - name: Lint
-        run: npm run -s lint || npx eslint . --ext .ts,.tsx
+        run: npm run lint
 
-      - name: Prisma generate (if present)
-        run: npx prisma generate || true
+      - name: Run tests
+        run: npm test
 
-      - name: Tests
-        run: npm test --silent -- --coverage || npm test --silent || true
-
-      - name: Build
-        run: npm run -s build
+      - name: Build application
+        run: npm run build

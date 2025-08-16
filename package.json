@@ -11,7 +11,9 @@
     "prisma:push": "prisma db push",
     "prisma:seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed/index.ts",
     "typecheck": "tsc --noEmit",
-    "seed": "node prisma/seed.js",
+    "seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset && npm run seed",
+    "db:studio": "prisma studio",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -50,10 +52,11 @@
     "prisma": "^6.13.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "tsx prisma/seed.ts"
   }
 }
