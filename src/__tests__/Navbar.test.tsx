@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import Navbar from '../components/layout/Navbar';
-import { vi } from 'vitest';
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 import { SessionProvider } from 'next-auth/react';
 import { CartProvider } from '../contexts/CartContext';
