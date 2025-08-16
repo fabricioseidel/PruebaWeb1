@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import fs from 'fs';
+import path from 'path';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
 
@@ -31,10 +35,48 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // PATCH /api/categories/[id]
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  // Only admins can update categories
+  try {
+    const session: any = await getServerSession(authOptions as any);
+    if (!session || session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+  } catch (e) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, slug, description, isActive } = body;
+    // process body.image if data URL
+    try {
+      const img = body?.image;
+      if (typeof img === 'string' && img.startsWith('data:image')) {
+        const match = img.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (match) {
+          const mime = match[1];
+          const base64 = match[2];
+          const extMap: Record<string, string> = {
+            'image/png': 'png',
+            'image/jpeg': 'jpg',
+            'image/jpg': 'jpg',
+            'image/webp': 'webp',
+            'image/gif': 'gif',
+            'image/svg+xml': 'svg'
+          };
+          const ext = extMap[mime] || mime.split('/')[1] || 'png';
+          const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+          await fs.promises.mkdir(uploadsDir, { recursive: true });
+          const filename = `category-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+          const filePath = path.join(uploadsDir, filename);
+          const buffer = Buffer.from(base64, 'base64');
+          await fs.promises.writeFile(filePath, buffer);
+          body.image = `/uploads/${filename}`;
+        }
+      }
+    } catch (e:any) {
+      console.error('Error saving category image', e?.message || e);
+    }
+    const { name, slug, description, isActive, image } = body;
     const normalizeSlug = (value: string) => value
       .toLowerCase()
       .normalize("NFD")
@@ -77,6 +119,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 // DELETE /api/categories/[id]
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  // Only admins can delete categories
+  try {
+    const session: any = await getServerSession(authOptions as any);
+    if (!session || session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+  } catch (e) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const productCount = await prisma.product.count({ where: { categoryId: id } });

@@ -6,17 +6,34 @@ import { useProducts } from "@/contexts/ProductContext";
 import { useMemo, useState } from "react";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/contexts/CartContext";
+import { useCategories } from "@/hooks/useCategories";
 
 export default function CategoriaDetallePage() {
   const params = useParams();
   const raw = params?.categoria as string | undefined;
   const decoded = raw ? decodeURIComponent(raw) : "";
-  const { products, loading } = useProducts();
+  const { products, loading: productsLoading } = useProducts();
+  const { categories, loading: categoriesLoading } = useCategories();
   const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState("default");
   const [search, setSearch] = useState("");
 
-  const items = useMemo(() => products.filter(p => p.category === decoded), [products, decoded]);
+  // Encontrar la categoría por slug o por nombre
+  const category = useMemo(() => {
+    return categories.find(cat => 
+      cat.slug === decoded || 
+      cat.name === decoded
+    );
+  }, [categories, decoded]);
+
+  // Filtrar productos por el nombre de la categoría
+  const categoryName = category?.name || decoded;
+  const items = useMemo(() => 
+    products.filter(p => Array.isArray(p.categories) && p.categories.includes(categoryName)), 
+    [products, categoryName]
+  );
+
+  const loading = productsLoading || categoriesLoading;
 
   const filtered = items.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase()));
 
@@ -32,7 +49,7 @@ export default function CategoriaDetallePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">{decoded || 'Categoría'}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">{categoryName || 'Categoría'}</h1>
           <p className="text-gray-600">{sorted.length} {sorted.length === 1 ? 'producto' : 'productos'} en esta categoría</p>
         </div>
         <Link href="/categorias" className="text-blue-600 hover:underline text-sm">&larr; Ver todas</Link>

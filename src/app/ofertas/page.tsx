@@ -5,9 +5,11 @@ import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
 import Button from "@/components/ui/Button";
 import { useMemo, useState } from "react";
+import { useCategoryNames } from "@/hooks/useCategories";
 
 export default function OfertasPage() {
-  const { products, loading } = useProducts();
+  const { products, loading: productsLoading } = useProducts();
+  const { categoryNames, loading: categoriesLoading } = useCategoryNames();
   const { addToCart } = useCart();
   const [category, setCategory] = useState("Todas");
   const [search, setSearch] = useState("");
@@ -15,11 +17,10 @@ export default function OfertasPage() {
   // Criterio de oferta: tiene priceOriginal > price
   const offerProducts = useMemo(() => products.filter(p => (p.priceOriginal || 0) > p.price), [products]);
 
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    offerProducts.forEach(p => p.category && set.add(p.category));
-    return ["Todas", ...Array.from(set).sort()];
-  }, [offerProducts]);
+  // Usar las categorías oficiales de la API en lugar de las derivadas de productos
+  const categories = useMemo(() => ["Todas", ...categoryNames], [categoryNames]);
+
+  const loading = productsLoading || categoriesLoading;
 
   const filtered = offerProducts.filter(p => {
     const catOk = category === "Todas" || p.category === category;

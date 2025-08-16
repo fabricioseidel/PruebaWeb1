@@ -88,8 +88,8 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
-  // Relaciones
-  products    Product[]
+  // Relaciones many-to-many con productos
+  productCategories ProductCategory[]
 }
 
 // Modelo para productos
@@ -105,11 +105,25 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  // Relaciones many-to-many con categorías
+  productCategories ProductCategory[]
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+}
+
+// Tabla de relación para productos y categorías (many-to-many)
+model ProductCategory {
+  id         String   @id @default(cuid())
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+  
   // Relaciones
-  categoryId  String
-  category    Category       @relation(fields: [categoryId], references: [id])
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  // Índice único para evitar duplicados
+  @@unique([productId, categoryId])
 }
 
 // Modelo para direcciones de envío

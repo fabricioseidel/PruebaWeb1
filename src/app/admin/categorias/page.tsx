@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useToast } from "@/contexts/ToastContext";
 import { useConfirm } from "@/contexts/ConfirmContext";
 import { 
@@ -10,13 +10,24 @@ import {
   PlusIcon
 } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/Button";
+import SingleImageUpload from "@/components/ui/SingleImageUpload";
+import { getImageUrlWithRandomTimestamp } from "@/utils/image";
 
 type Category = {
   id: string;
   name: string;
   slug: string;
   description: string;
+  image?: string;
   productsCount: number;
+  isActive: boolean;
+};
+
+type CategoryForm = {
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
   isActive: boolean;
 };
 
@@ -29,38 +40,62 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [imageRefreshMap, setImageRefreshMap] = useState<Map<string, number>>(new Map());
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  
+  // Función para obtener URL de imagen con timestamp único por categoría
+  const getImageUrlForCategory = (categoryId: string, imageUrl: string | undefined) => {
+    if (!imageUrl) return '/file.svg';
+    const refreshTime = imageRefreshMap.get(categoryId) || Date.now();
+    const separator = imageUrl.includes('?') ? '&' : '?';
+    return `${imageUrl}${separator}t=${refreshTime}&r=${Math.random()}`;
+  };
   
   // Modal para crear/editar categoría
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   
   // Estado para el formulario de categoría
-  const [formData, setFormData] = useState({
+  const initialFormData: CategoryForm = {
     name: "",
     slug: "",
     description: "",
-    isActive: true
-  });
+    image: "",
+    isActive: true,
+  };
+
+  const [formData, setFormData] = useState<CategoryForm>(initialFormData);
   const [formErrors, setFormErrors] = useState<{ name?: string; slug?: string }>({});
+
+  // Función para cargar categorías
+  const loadCategories = async () => {
+    setLoading(true);
+    setGlobalError(null);
+    try {
+      const res = await fetch('/api/categories', { cache: 'no-store' });
+      if (!res.ok) throw new Error('No se pudieron cargar las categorías');
+      const maybe = await res.json().catch((err) => {
+        console.error('Error parsing /api/categories response', err);
+        return null;
+      });
+      console.debug('Fetched /api/categories response:', maybe);
+      if (!Array.isArray(maybe)) throw new Error('Respuesta inválida de /api/categories');
+      const data: Category[] = maybe;
+      setCategories(data);
+    } catch (e: any) {
+      setGlobalError(e.message || 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Cargar categorías desde la API al montar
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      setLoading(true);
-      setGlobalError(null);
-      try {
-        const res = await fetch('/api/categories', { cache: 'no-store' });
-        if (!res.ok) throw new Error('No se pudieron cargar las categorías');
-        const data: Category[] = await res.json();
-        if (!cancelled) setCategories(data);
-      } catch (e: any) {
-        if (!cancelled) setGlobalError(e.message || 'Error desconocido');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      await loadCategories();
     };
     load();
     return () => { cancelled = true; };
@@ -75,27 +110,24 @@ export default function CategoriesPage() {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
   
-  // Filtrar categorías
-  const filteredCategories = categories.filter((category) => {
-    const matchesSearch = 
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = showInactiveCategories || category.isActive;
-    
-    return matchesSearch && matchesStatus;
-  });
+  // Filtrar categorías (proteger description nulo)
+  const filteredCategories = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return categories.filter((category) => {
+      const name = String(category.name || "").toLowerCase();
+      const desc = String(category.description || "").toLowerCase();
+      const matchesSearch = name.includes(q) || desc.includes(q);
+      const matchesStatus = showInactiveCategories || category.isActive;
+      return matchesSearch && matchesStatus;
+    });
+  }, [categories, searchTerm, showInactiveCategories]);
 
   // Abrir modal para crear nueva categoría
   const handleCreateCategory = () => {
+  console.debug('Opening create category modal');
     setEditingCategory(null);
-    setFormData({
-      name: "",
-      slug: "",
-      description: "",
-      isActive: true
-    });
-    setIsModalOpen(true);
+  setFormData(initialFormData);
+  setIsModalOpen(true);
   };
 
   // Abrir modal para editar categoría
@@ -104,11 +136,36 @@ export default function CategoriesPage() {
     setFormData({
       name: category.name,
       slug: category.slug,
-      description: category.description,
-      isActive: category.isActive
+  description: category.description,
+  image: (category as any).image || "",
+  isActive: category.isActive
     });
     setIsModalOpen(true);
   };
+
+  // Cerrar modal y resetear estado del formulario
+  const closeModal = () => {
+  console.debug('Closing category modal');
+    setIsModalOpen(false);
+    setEditingCategory(null);
+    setFormErrors({});
+    setFormData(initialFormData);
+  };
+
+  // Focus + ESC handler for modal
+  useEffect(() => {
+    if (isModalOpen) {
+      // focus next tick
+      setTimeout(() => nameInputRef.current?.focus(), 0);
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        closeModal();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isModalOpen]);
 
   // Manejar cambios en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -153,6 +210,31 @@ export default function CategoriesPage() {
     setSaving(true);
     setGlobalError(null);
     try {
+      // Subir imagen si es data-URL (nueva imagen)
+      let finalImageUrl = formData.image;
+      if (formData.image && formData.image.startsWith('data:')) {
+        try {
+          const uploadRes = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: formData.image })
+          });
+          
+          if (!uploadRes.ok) {
+            const errorData = await uploadRes.json().catch(() => ({}));
+            console.error('Error subiendo imagen:', errorData);
+            throw new Error(errorData.error || 'Error subiendo imagen');
+          }
+          
+          const uploadData = await uploadRes.json();
+          finalImageUrl = uploadData.url;
+        } catch (uploadError: any) {
+          console.error('Error en la subida de imagen:', uploadError);
+          setGlobalError(`Error subiendo la imagen: ${uploadError.message}`);
+          return;
+        }
+      }
+
       if (editingCategory) {
         // Actualizar categoría existente vía API
         const res = await fetch(`/api/categories/${editingCategory.id}`, {
@@ -162,17 +244,31 @@ export default function CategoriesPage() {
             name: formData.name.trim(),
             slug: finalSlug,
             description: formData.description,
+            image: finalImageUrl,
             isActive: formData.isActive,
           }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
           if (res.status === 409) setFormErrors(prev => ({ ...prev, slug: data.error || 'Slug o nombre ya existe' }));
           else setGlobalError(data.error || 'No se pudo actualizar la categoría');
           return;
         }
         setCategories(prev => prev.map(c => c.id === data.id ? data : c));
+        
+        // Forzar actualización de imagen para esta categoría específica
+        setImageRefreshMap(prev => {
+          const newMap = new Map(prev);
+          newMap.set(editingCategory.id, Date.now());
+          return newMap;
+        });
+        
         showToast(`Categoría "${formData.name}" actualizada correctamente`, "success");
+        
+        // Recargar la lista después de un breve delay
+        setTimeout(() => {
+          loadCategories();
+        }, 200);
       } else {
         // Crear nueva categoría vía API
         const res = await fetch('/api/categories', {
@@ -182,20 +278,29 @@ export default function CategoriesPage() {
             name: formData.name.trim(),
             slug: finalSlug,
             description: formData.description,
+            image: finalImageUrl,
             isActive: formData.isActive,
           }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
           if (res.status === 409) setFormErrors(prev => ({ ...prev, slug: data.error || 'Slug o nombre ya existe' }));
           else setGlobalError(data.error || 'No se pudo crear la categoría');
           return;
         }
         setCategories(prev => [data, ...prev]);
+        
+        // Forzar carga de imagen para la nueva categoría
+        setImageRefreshMap(prev => {
+          const newMap = new Map(prev);
+          newMap.set(data.id, Date.now());
+          return newMap;
+        });
+        
         showToast(`Categoría "${formData.name}" creada correctamente`, "success");
       }
-      // Cerrar modal
-      setIsModalOpen(false);
+      // Cerrar modal y limpiar estado
+      closeModal();
     } catch (err: any) {
       setGlobalError(err.message || 'Error de red');
     } finally {
@@ -217,7 +322,7 @@ export default function CategoriesPage() {
     });
     
     if (!confirmed) return;
-    
+
     setGlobalError(null);
     try {
       const res = await fetch(`/api/categories/${categoryId}`, { method: 'DELETE' });
@@ -247,7 +352,7 @@ export default function CategoriesPage() {
     });
     
     if (!confirmed) return;
-    
+
     setGlobalError(null);
     try {
       const res = await fetch(`/api/categories/${categoryId}`, {
@@ -255,7 +360,7 @@ export default function CategoriesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !category.isActive }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
         showToast(data.error || 'No se pudo actualizar el estado', "error");
         return;
@@ -333,6 +438,9 @@ export default function CategoriesPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Imagen
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nombre
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -355,12 +463,24 @@ export default function CategoriesPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={6}>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={7}>
                     Cargando categorías...
                   </td>
                 </tr>
               ) : filteredCategories.map((category) => (
                 <tr key={category.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {category.image ? (
+                      <img 
+                        key={`${category.id}-${imageRefreshMap.get(category.id) || 0}`}
+                        src={getImageUrlForCategory(category.id, category.image)} 
+                        alt={category.name} 
+                        className="h-10 w-10 rounded-md object-cover" 
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">Sin</div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{category.name}</div>
                   </td>
@@ -430,15 +550,15 @@ export default function CategoriesPage() {
 
       {/* Modal para crear/editar categoría */}
       {isModalOpen && (
-        <div className="fixed inset-0 overflow-y-auto z-50" onClick={() => setIsModalOpen(false)}>
+        <div className="fixed inset-0 overflow-y-auto z-50" onClick={() => closeModal()}>
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" onClick={e => e.stopPropagation()}>
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 opacity-75 z-40"></div>
             </div>
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-50 pointer-events-auto">
               <form onSubmit={handleSaveCategory}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
@@ -460,6 +580,7 @@ export default function CategoriesPage() {
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             value={formData.name}
                             onChange={handleChange}
+                            ref={nameInputRef}
                           />
                           {formErrors.name && (
                             <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
@@ -503,6 +624,18 @@ export default function CategoriesPage() {
                           ></textarea>
                         </div>
 
+                        {/* Imagen */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Imagen</label>
+                          <div className="mt-1">
+                            <SingleImageUpload
+                              label="Subir imagen de categoría"
+                              value={formData.image}
+                              onChange={(dataUrl) => setFormData(prev => ({ ...prev, image: dataUrl }))}
+                            />
+                          </div>
+                        </div>
+
                         {/* Estado */}
                         <div className="flex items-center">
                           <input
@@ -532,7 +665,7 @@ export default function CategoriesPage() {
                   <button
                     type="button"
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => closeModal()}
                   >
                     Cancelar
                   </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
@@ -10,18 +10,13 @@ import SingleImageUpload from "@/components/ui/SingleImageUpload";
 import MultiImageUpload from "@/components/ui/MultiImageUpload";
 import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/contexts/ToastContext";
-
-// Categorías disponibles
-const categories = [
-  { id: "1", name: "Electrónica" },
-  { id: "2", name: "Moda" },
-  { id: "3", name: "Hogar" },
-  { id: "4", name: "Deportes" },
-];
+import { useCategories } from "@/hooks/useCategories";
+import { normalizeImageUrl } from '@/utils/image';
 
 export default function NewProductPage() {
   const router = useRouter();
   const { addProduct } = useProducts();
+  const { categories, loading: categoriesLoading } = useCategories();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   
@@ -31,7 +26,7 @@ export default function NewProductPage() {
     description: string;
     price: string;
     stock: string;
-    category: string;
+    categories: string[]; // Cambiado a array de categorías
     featured: boolean;
     image: string;
     gallery: string[];
@@ -41,12 +36,16 @@ export default function NewProductPage() {
     description: "",
     price: "",
     stock: "",
-    category: categories[0].name,
+    categories: [], // Inicializar como array vacío
     featured: false,
     image: "",
     gallery: [],
     features: ["", "", "", "", ""],
   });
+
+  useEffect(() => {
+    // No necesitamos auto-seleccionar categorías, el usuario las elegirá
+  }, [categories]);
   
   // Estado para errores de validación
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,12 +106,16 @@ export default function NewProductPage() {
       newErrors.image = "La imagen principal es obligatoria";
     }
     
+    if (formData.categories.length === 0) {
+      newErrors.categories = "Debe seleccionar al menos una categoría";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
   
   // Manejar envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -122,37 +125,52 @@ export default function NewProductPage() {
     setLoading(true);
     
     try {
+      // If image or gallery entries are data URLs, upload them to server to get /uploads/ URLs
+      const uploadIfDataUrl = async (img?: string) => {
+        if (!img) return img;
+        if (img.startsWith('data:image')) {
+          const res = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: img }),
+          });
+          if (res.ok) {
+            const j = await res.json().catch(() => null);
+            return j?.url || img;
+          }
+          return img;
+        }
+        return img;
+      };
+
+      const imageUrl = await uploadIfDataUrl(formData.image);
+      const galleryUrls = await Promise.all(formData.gallery.map(g => uploadIfDataUrl(g)));
+
       // Preparar datos del producto
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        category: formData.category,
+        categories: formData.categories, // Cambio: usar categories en lugar de category
         featured: formData.featured,
-        image: formData.image,
-  gallery: formData.gallery.filter(url => url && url.trim() !== ""),
+        image: imageUrl,
+        gallery: galleryUrls.filter(url => url && url.trim() !== ""),
         features: formData.features.filter(feature => feature.trim() !== ""),
         slug: formData.name.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-'),
       };
-      
+
       // Usar el contexto para añadir el producto
-      const newProduct = addProduct(productData);
-      
+      addProduct(productData);
+
       // Mostrar mensaje de éxito
-      showToast(
-        `Producto "${productData.name}" creado correctamente`,
-        "success"
-      );
-      
+      showToast(`Producto "${productData.name}" creado correctamente`, "success");
+
       // Redireccionar a la lista de productos
       router.push("/admin/productos");
     } catch (error) {
       console.error("Error al crear producto:", error);
-      showToast(
-        "Error al crear el producto. Inténtalo de nuevo.",
-        "error"
-      );
+      showToast("Error al crear el producto. Inténtalo de nuevo.", "error");
     } finally {
       setLoading(false);
     }
@@ -237,23 +255,53 @@ export default function NewProductPage() {
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categoría
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Categorías
                   </label>
-                  <select
-                    id="category"
-                    name="category"
-                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    value={formData.category}
-                    onChange={handleChange}
-                  >
+                  <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
                     {categories.map((category) => (
-                      <option key={category.id} value={category.name}>
-                        {category.name}
-                      </option>
+                      <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={formData.categories.includes(category.name)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData(prev => ({
+                                ...prev,
+                                categories: [...prev.categories, category.name]
+                              }));
+                            } else {
+                              setFormData(prev => ({
+                                ...prev,
+                                categories: prev.categories.filter(c => c !== category.name)
+                              }));
+                            }
+                          }}
+                        />
+                        <span className="text-sm text-gray-700">{category.name}</span>
+                      </label>
                     ))}
-                  </select>
+                    {categories.length === 0 && (
+                      <p className="text-sm text-gray-500 italic">
+                        No hay categorías disponibles. 
+                        <Link href="/admin/categorias" className="text-blue-600 hover:text-blue-500">
+                          Crear categorías primero
+                        </Link>
+                      </p>
+                    )}
+                  </div>
+                  {formData.categories.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-600">
+                        Seleccionadas: <span className="font-medium">{formData.categories.join(", ")}</span>
+                      </p>
+                    </div>
+                  )}
+                  {errors.categories && (
+                    <p className="mt-1 text-sm text-red-600">{errors.categories}</p>
+                  )}
                 </div>
                 
                 <div className="flex items-center">

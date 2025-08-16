@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { normalizeImageUrl } from '@/utils/image';
 import { useProducts } from "@/contexts/ProductContext";
 
 export default function Home() {
@@ -25,36 +27,77 @@ export default function Home() {
 
   const featuredProducts = products.filter(p => p.featured).slice(0, 8);
 
+  // Banner image state (comes from server settings)
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        if (res.ok) {
+          const settings = await res.json();
+          const serverBanner = settings?.appearance?.bannerUrl;
+          if (serverBanner) setBannerImage(serverBanner);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-emerald-800 via-emerald-700 to-amber-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+      <section className="relative bg-gradient-to-br from-emerald-800 via-emerald-700 to-amber-800 text-white overflow-hidden">
+        {/* Imagen de fondo (usa la imagen personalizada si existe). Si es personalizada usamos background-image para evitar restricciones de next/image */}
+        <div className="absolute inset-0 z-0">
+          {bannerImage ? (
+            <div
+              className="absolute inset-0 w-full h-full bg-center bg-cover"
+              style={{ backgroundImage: `url(${bannerImage})` }}
+            />
+          ) : (
+            <Image
+              src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=1920&auto=format&fit=crop"
+              alt="Minimarket venezolano con productos tradicionales"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          )}
+          {/* Overlay oscuro para mejorar legibilidad del texto */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/80 via-emerald-800/75 to-amber-900/70"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="md:w-2/3">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg">
               OLIVOMARKET
             </h1>
-            <p className="text-xl mb-4 font-medium tracking-wide text-emerald-50">
-              "como en casa pero más cerquita"
+            <p className="text-xl mb-4 font-medium tracking-wide text-emerald-50 drop-shadow">
+              &quot;como en casa pero más cerquita&quot;
             </p>
-            <p className="text-lg mb-8 max-w-xl text-emerald-50/90">
+            <p className="text-lg mb-8 max-w-xl text-emerald-50/95 drop-shadow">
               Minimarket venezolano en Chile: víveres, quesos, cecinas, panes, helados y más sabores que te conectan con tu tierra.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/productos">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500">Ver Productos</Button>
+                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500 shadow-lg">Ver Productos</Button>
               </Link>
               <Link href="/ofertas">
-                <Button variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white/10">
+                <Button variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white/10 shadow-lg">
                   Ofertas
                 </Button>
               </Link>
             </div>
+
+            {/* Personalización disponible únicamente desde el panel de administrador (Apariencia) */}
           </div>
         </div>
-        {/* Overlay decorativo */}
-        <div className="absolute right-0 top-0 h-full w-1/3 bg-opacity-20 hidden lg:block">
-          <div className="h-full w-full bg-white/10 backdrop-blur-sm mix-blend-overlay"></div>
+
+        {/* Overlay decorativo derecho */}
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-opacity-20 hidden lg:block z-10">
+          <div className="h-full w-full bg-white/5 backdrop-blur-sm mix-blend-overlay"></div>
         </div>
       </section>
 
@@ -72,7 +115,7 @@ export default function Home() {
                 <div className="relative h-48 overflow-hidden">
                   <div className="absolute inset-0 bg-emerald-900/40 group-hover:bg-emerald-900/25 transition-all z-10"></div>
                   <Image
-                    src={category.image}
+                      src={normalizeImageUrl(category.image)}
                     alt={category.name}
                     fill
                     sizes="(max-width: 640px) 100vw, 25vw"

@@ -6,23 +6,20 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useCart } from "@/contexts/CartContext";
 import { useProducts } from "@/contexts/ProductContext";
-
-// Derivamos categorías dinámicamente desde los productos + "Todas"
-function useCategoryOptions(products: { category: string }[]) {
-  return useMemo(() => {
-    const set = new Set<string>();
-    products.forEach(p => p.category && set.add(p.category));
-    return ["Todas", ...Array.from(set).sort()];
-  }, [products]);
-}
+import { useCategoryNames } from "@/hooks/useCategories";
 
 export default function ProductsPage() {
-  const { products, loading } = useProducts();
+  const { products, loading: productsLoading } = useProducts();
+  const { categoryNames, loading: categoriesLoading } = useCategoryNames();
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const { addToCart } = useCart();
-  const categories = useCategoryOptions(products);
+
+  // Combinar "Todas" con las categorías de la API
+  const categories = useMemo(() => ["Todas", ...categoryNames], [categoryNames]);
+
+  const loading = productsLoading || categoriesLoading;
 
   if (loading) {
     return (

@@ -10,7 +10,8 @@ import {
   TagIcon, 
   ClipboardDocumentListIcon,
   ChartBarIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  BugAntIcon
 } from "@heroicons/react/24/outline";
 
 export default function AdminLayout({
@@ -51,6 +52,7 @@ export default function AdminLayout({
     { name: "Pedidos", href: "/admin/pedidos", icon: ClipboardDocumentListIcon },
     { name: "Usuarios", href: "/admin/usuarios", icon: UsersIcon },
     { name: "Configuración", href: "/admin/configuracion", icon: Cog6ToothIcon },
+    { name: "Debug Categorías", href: "/debug/categorias", icon: BugAntIcon },
   ];
 
   return (

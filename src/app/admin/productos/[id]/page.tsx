@@ -2,8 +2,10 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { normalizeImageUrl } from '@/utils/image';
 import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useCategories } from "@/hooks/useCategories";
 import Button from "@/components/ui/Button";
 import SingleImageUpload from "@/components/ui/SingleImageUpload";
 import MultiImageUpload from "@/components/ui/MultiImageUpload";
@@ -13,7 +15,7 @@ interface FormState {
   price: string;
   image: string;
   description: string;
-  category: string;
+  categories: string[]; // Cambio: ahora es array
   stock: string;
   featured: boolean;
   gallery: string[];
@@ -25,6 +27,7 @@ export default function EditProductPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { getProductById, updateProduct, deleteProduct } = useProducts();
+  const { categories } = useCategories();
   const { showToast } = useToast();
   const product = getProductById(id);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export default function EditProductPage() {
         price: product.price.toString(),
         image: product.image,
         description: product.description,
-        category: product.category,
+        categories: product.categories || [], // Usar categories del producto
         stock: product.stock.toString(),
         featured: product.featured,
         gallery: product.gallery || [],
@@ -64,25 +67,45 @@ export default function EditProductPage() {
     setForm(prev => prev ? ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }) : prev);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form) return;
     // Validaciones básicas
     if (!form.name.trim()) { showToast('Nombre requerido', 'error'); return; }
     if (!form.price || isNaN(Number(form.price))) { showToast('Precio inválido', 'error'); return; }
-    if (!form.category.trim()) { showToast('Categoría requerida', 'error'); return; }
+    if (form.categories.length === 0) { showToast('Debe seleccionar al menos una categoría', 'error'); return; }
 
     setSaving(true);
     try {
+      const uploadIfDataUrl = async (img?: string) => {
+        if (!img) return img;
+        if (img.startsWith('data:image')) {
+          const res = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: img }),
+          });
+          if (res.ok) {
+            const j = await res.json().catch(() => null);
+            return j?.url || img;
+          }
+          return img;
+        }
+        return img;
+      };
+
+      const imageUrl = await uploadIfDataUrl(form.image);
+      const galleryUrls = await Promise.all((form.gallery || []).map(g => uploadIfDataUrl(g)));
+
       updateProduct(product.id, {
         name: form.name.trim(),
         price: Number(form.price),
-        image: form.image,
+        image: imageUrl,
         description: form.description.trim(),
         category: form.category.trim(),
         stock: Number(form.stock) || 0,
         featured: form.featured,
-        gallery: form.gallery,
+        gallery: galleryUrls,
         features: form.features.split('\n').map(f => f.trim()).filter(Boolean),
         slug: form.slug.trim(),
       });
@@ -138,7 +161,13 @@ export default function EditProductPage() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-            <input name="category" value={form.category} onChange={handleChange} className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" />
+          <select name="category" value={form.category} onChange={handleChange} className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+            {categories.length > 0 ? categories.map(c => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            )) : (
+              <option value={form.category}>{form.category}</option>
+            )}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>

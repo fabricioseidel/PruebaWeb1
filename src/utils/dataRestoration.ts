@@ -125,9 +125,20 @@ export const clearAllData = () => {
 };
 
 // Agregar funciones al objeto global para uso en consola
+declare global {
+  interface Window {
+    restoreDefaultData?: () => boolean;
+    clearAllData?: () => boolean;
+  }
+
+  // Ensure this file is treated as a module
+  // (prevents duplicate identifier errors in some TS configs)
+  const __dummy_restore: unknown;
+}
+
 if (typeof window !== 'undefined') {
-  (window as any).restoreDefaultData = restoreDefaultData;
-  (window as any).clearAllData = clearAllData;
+  window.restoreDefaultData = restoreDefaultData;
+  window.clearAllData = clearAllData;
 }
 
 // Instrucciones para usar en consola

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import SingleImageUpload from "@/components/ui/SingleImageUpload";
 
 // Datos iniciales de la tienda
 const initialStoreData = {
@@ -54,6 +55,23 @@ export default function SettingsPage() {
   const [storeData, setStoreData] = useState(initialStoreData);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        if (res.ok) {
+          const data = await res.json();
+          setStoreData((prev) => ({ ...prev, ...data } as any));
+        }
+      } catch (e) {
+        // ignore
+      } finally {
+        setLoadingSettings(false);
+      }
+    })();
+  }, []);
   
   // Manejar cambios en los campos del formulario
   const handleChange = (section: string, field: string, value: any) => {
@@ -82,18 +100,26 @@ export default function SettingsPage() {
   // Guardar configuración
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    saveSettings(storeData);
+  };
+
+  // Reusable save function (can be called for partial or full storeData)
+  const saveSettings = async (dataToSave: any) => {
     setIsSaving(true);
-    
-    // Simular guardado asincrónico
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave) });
+      if (res.ok) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        alert('Error guardando: ' + (json.message || res.statusText));
+      }
+    } catch (e:any) {
+      alert('Error guardando: ' + e.message);
+    } finally {
       setIsSaving(false);
-      setShowSuccess(true);
-      
-      // Ocultar mensaje de éxito después de 3 segundos
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 3000);
-    }, 1000);
+    }
   };
   
   return (
@@ -388,8 +414,45 @@ export default function SettingsPage() {
                       id="bannerUrl"
                       value={storeData.appearance.bannerUrl}
                       onChange={(e) => handleInputChange(e, "appearance")}
+                      onBlur={() => saveSettings(storeData)}
+                      placeholder="https://... o pegar una imagen"
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
+                    <div className="mt-3">
+                      <SingleImageUpload
+                        label="Subir banner"
+                        value={storeData.appearance.bannerUrl || ""}
+                        onChange={async (dataUrl) => {
+                          const updated = { ...storeData, appearance: { ...storeData.appearance, bannerUrl: dataUrl } };
+                          setStoreData(updated);
+                          await saveSettings(updated);
+                        }}
+                      />
+
+                      {/* Vista previa y estado de guardado */}
+                      {storeData.appearance.bannerUrl ? (
+                        <div className="mt-3">
+                          <div className="w-full h-36 rounded-md overflow-hidden border border-gray-200 bg-gray-50 relative">
+                            <div
+                              style={{ backgroundImage: `url(${storeData.appearance.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                              className="absolute inset-0"
+                            />
+                          </div>
+                          <div className="mt-2 flex items-center text-sm text-gray-600">
+                            {isSaving ? (
+                              <span className="text-gray-500">Guardando...</span>
+                            ) : showSuccess ? (
+                              <>
+                                <CheckIcon className="h-4 w-4 text-green-500 mr-1" />
+                                <span className="text-green-700">Guardado</span>
+                              </>
+                            ) : (
+                              <span>Vista previa</span>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                   
                   <div className="flex items-center">
