@@ -1,5 +1,7 @@
 # 🛒 OLIVOMARKET - E-commerce Platform
 
+![CI](https://github.com/fabricioseidel/PruebaWeb1/actions/workflows/ci.yml/badge.svg)
+
 Una plataforma de comercio electrónico completa construida con Next.js 15, TypeScript y Prisma. Incluye panel administrativo, autenticación de usuarios, carrito de compras y sistema de gestión de productos.
 
 ## 🚀 Características Principales
@@ -52,24 +54,28 @@ yarn install
 pnpm install
 ```
 
-### 3. Configurar variables de entorno
-```bash
-# Crea un archivo .env.local con:
-NEXTAUTH_SECRET=tu_secret_key_aqui
-NEXTAUTH_URL=http://localhost:3000
-DATABASE_URL="file:./dev.db"
-```
+### 3. Variables de entorno
+1. Copia `.env.example` → `.env.local` y completa valores reales:
+   - `NEXTAUTH_URL=http://localhost:3000`
+   - `NEXTAUTH_SECRET=<string seguro>`
+   - `AUTH_TRUST_HOST=true`
+   - `DATABASE_URL="file:./dev.db"`
 
 ### 4. Configurar la base de datos
 ```bash
-# Ejecutar migraciones
-npx prisma db push
-
-# (Opcional) Seed con datos de ejemplo
-npx prisma db seed
+# Generar cliente Prisma
+npx prisma generate
+# Aplicar schema a la base de datos
+npx prisma db push        # o npx prisma migrate dev -n seed
 ```
 
-### 5. Ejecutar en desarrollo
+### 5. Seed de desarrollo
+```bash
+# Poblar con productos base OlivoMarket
+npm run seed
+```
+
+### 6. Ejecutar en desarrollo
 ```bash
 npm run dev
 # o
@@ -158,8 +164,9 @@ npm run start        # Servidor de producción
 npm run test         # Ejecutar tests
 npm run test:coverage # Tests con coverage
 npm run lint         # ESLint
+npm run typecheck    # Verificación TypeScript
+npm run seed         # Poblar DB con productos OlivoMarket
 npm run db:push      # Sincronizar schema DB
-npm run db:seed      # Poblar DB con datos
 ```
 
 ## 📈 Métricas de Calidad
