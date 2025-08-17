@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   PencilIcon, 
@@ -12,17 +12,20 @@ import {
   ArrowDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DocumentArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/Button";
 import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import BulkUploadModal from "@/components/admin/BulkUploadModal";
+import BulkUploadHelp from "@/components/admin/BulkUploadHelp";
 
 // Categorías disponibles
 import { useCategories } from "@/hooks/useCategories";
 
 export default function AdminProductsPage() {
-  const { products, deleteProduct } = useProducts();
+  const { products, deleteProduct, refreshFromDatabase } = useProducts();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const { categories, loading: categoriesLoading } = useCategories();
@@ -31,6 +34,9 @@ export default function AdminProductsPage() {
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const itemsPerPage = 5;
 
   // Filtrar productos por término de búsqueda y categoría
@@ -113,17 +119,68 @@ export default function AdminProductsPage() {
     }
   };
 
+  // Manejar actualización desde la base de datos
+  const handleRefreshFromDatabase = async () => {
+    setRefreshing(true);
+    try {
+      await refreshFromDatabase();
+      showToast('Productos actualizados desde la base de datos', 'success');
+    } catch (error) {
+      console.error('Error refreshing products:', error);
+      showToast('Error al actualizar productos desde la base de datos', 'error');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Manejar sincronización de productos
+  const handleSyncProducts = async () => {
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/products/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ products }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showToast(`${result.synced} productos sincronizados con la base de datos`, 'success');
+        
+        if (result.createdCategories.length > 0) {
+          showToast(`Categorías creadas: ${result.createdCategories.join(', ')}`, 'info');
+        }
+        
+        if (result.skipped > 0) {
+          showToast(`${result.skipped} productos ya existían en la base de datos`, 'info');
+        }
+      } else {
+        showToast(result.error || 'Error durante la sincronización', 'error');
+      }
+    } catch (error) {
+      console.error('Error during sync:', error);
+      showToast('Error de conexión durante la sincronización', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Mostrar toast cuando no hay resultados tras filtrar (evitar llamar desde el render)
+  useEffect(() => {
+    // Mostrar aviso solo si ya hay productos cargados y el filtrado devuelve 0
+    if (filteredProducts.length === 0 && products.length > 0) {
+      showToast('No se encontraron productos', 'warning');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredProducts.length, searchTerm, selectedCategory]);
+
   if (categoriesLoading) {
     return (
       <div className="p-8 text-center text-gray-500">
         <span className="animate-pulse">Cargando categorías...</span>
-      </div>
-    );
-  }
-  if (!categories || categories.length === 0) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        No se encontraron categorías. <Link href="/admin/categorias" className="text-blue-600 hover:underline">Crear una categoría</Link>
       </div>
     );
   }
@@ -136,13 +193,41 @@ export default function AdminProductsPage() {
             Gestiona todos los productos de tu tienda
           </p>
         </div>
-        <Link href="/admin/productos/nuevo">
-          <Button>
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nuevo Producto
+        <div className="flex gap-3">
+          <Button
+            onClick={handleRefreshFromDatabase}
+            variant="outline"
+            disabled={refreshing}
+          >
+            <ArrowDownIcon className="h-5 w-5 mr-2" />
+            {refreshing ? 'Cargando...' : 'Refrescar BD'}
           </Button>
-        </Link>
+          <Button
+            onClick={handleSyncProducts}
+            variant="outline"
+            disabled={syncing || products.length === 0}
+          >
+            <ArrowUpIcon className="h-5 w-5 mr-2" />
+            {syncing ? 'Sincronizando...' : 'Sincronizar BD'}
+          </Button>
+          <Button
+            onClick={() => setShowBulkUpload(true)}
+            variant="outline"
+          >
+            <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
+            Carga Masiva
+          </Button>
+          <Link href="/admin/productos/nuevo">
+            <Button>
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Nuevo Producto
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Ayuda para carga masiva */}
+      <BulkUploadHelp />
 
       {/* Filtros y búsqueda */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
@@ -170,7 +255,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="Todas">Todas</option>
-              {categories.map((category) => (
+              {categories && categories.map((category) => (
                 <option key={category.id} value={category.name}>
                   {category.name}
                 </option>
@@ -187,7 +272,7 @@ export default function AdminProductsPage() {
           
           <div className="text-right">
             <span className="text-sm text-gray-500">
-              {filteredProducts.length === 0 ? (showToast('No se encontraron productos', 'warning'), 'Sin resultados') : `Mostrando ${currentItems.length} de ${filteredProducts.length} productos`}
+              {filteredProducts.length === 0 ? 'Sin resultados' : `Mostrando ${currentItems.length} de ${filteredProducts.length} productos`}
             </span>
           </div>
         </div>
@@ -418,6 +503,12 @@ export default function AdminProductsPage() {
       {/* Toast de notificación es manejado por el ToastContext */}
 
       {/* Diálogo de confirmación es manejado por el ConfirmContext */}
+      
+      {/* Modal de carga masiva */}
+      <BulkUploadModal
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+      />
     </div>
   );
 }

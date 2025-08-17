@@ -72,11 +72,11 @@ export default function AdminDashboard() {
   }, [products]);
 
   const exportCSV = () => {
-    const header = ["id","name","category","price","priceOriginal","stock","viewCount","orderClicks"].join(",");
+    const header = ["id","name","categories","price","priceOriginal","stock","viewCount","orderClicks"].join(",");
     const rows = products.map(p => [
       p.id,
       JSON.stringify(p.name),
-      JSON.stringify(p.category),
+      JSON.stringify(p.categories?.join(", ") || ""),
       p.price,
       p.priceOriginal ?? "",
       p.stock,
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
           rows={topViewed.map(p => ({
             id: p.id,
             nombre: p.name,
-            categoria: p.category,
+            categoria: p.categories?.join(", ") || "Sin categoría",
             valor: p.viewCount || 0,
             extra: p.orderClicks || 0,
           }))}
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
           rows={topOrderIntents.map(p => ({
             id: p.id,
             nombre: p.name,
-            categoria: p.category,
+            categoria: p.categories?.join(", ") || "Sin categoría",
             valor: p.orderClicks || 0,
             extra: p.viewCount || 0,
           }))}

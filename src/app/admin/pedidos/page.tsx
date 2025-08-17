@@ -4,26 +4,15 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowUpIcon, ArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/contexts/ToastContext";
-
-// Tipo normalizado que usará la tabla
-interface Order {
-  id: string;
-  customer?: string; // puede no venir todavía
-  email?: string;
-  date: string; // YYYY-MM-DD
-  total: number;
-  status: string;
-  items?: number; // cantidad de items
-}
-
-// Tipo bruto que podría venir de distintos orígenes (checkout usa campos en español)
-type RawOrder = any;
+import { OrderManager, Order } from "@/utils/orderManager";
+import OrderDiagnostics from "@/components/admin/OrderDiagnostics";
 
 export default function AdminOrdersPage() {
   // ...existing code...
   // ...existing code...
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [sortField, setSortField] = useState<keyof Order | "date">("date");
@@ -34,32 +23,19 @@ export default function AdminOrdersPage() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem("orders") : null;
-      if (raw) {
-        const parsed: RawOrder[] = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          const normalized: Order[] = parsed.map(o => {
-            // Campos posibles: id, fecha/date, total, estado/status, productos, items
-            const date = (o.date || o.fecha || new Date().toISOString().split("T")[0]).toString();
-            const status = (o.status || o.estado || "Desconocido").toString();
-            const total = Number(o.total) || 0;
-            const itemsCount = typeof o.items === 'number' ? o.items : (Array.isArray(o.items) ? o.items.reduce((acc: number, it: any) => acc + (Number(it.quantity)||0), 0) : (o.productos || 0));
-            return {
-              id: o.id?.toString() || "SIN-ID",
-              customer: o.customer || o.cliente || o.name || "-",
-              email: o.email || o.correo || undefined,
-              date: date.length > 10 ? date.split("T")[0] : date,
-              total,
-              status,
-              items: itemsCount
-            };
-          });
-          setOrders(normalized);
-        }
+    // Usar OrderManager para obtener pedidos normalizados
+    const normalizedOrders = OrderManager.getAllOrders();
+    setOrders(normalizedOrders);
+    
+    if (!initialLoadComplete) {
+      setInitialLoadComplete(true);
+      if (normalizedOrders.length === 0) {
+        console.log('ℹ️ No hay pedidos para mostrar');
+      } else {
+        console.log(`📊 Cargados ${normalizedOrders.length} pedidos`);
       }
-    } catch {}
-  }, []);
+    }
+  }, [initialLoadComplete]);
   // Memo para evitar recalcular en cada render
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
@@ -83,13 +59,6 @@ export default function AdminOrdersPage() {
       return true;
     });
   }, [orders, searchTerm, statusFilter, dateFrom, dateTo]);
-
-  // Mostrar toast si no hay resultados
-  useEffect(() => {
-    if (filteredOrders.length === 0) {
-      showToast('No se encontraron pedidos', 'warning');
-    }
-  }, [filteredOrders.length, showToast]);
 
   const sortedOrders = useMemo(() => {
     const arr = [...filteredOrders];
@@ -233,6 +202,9 @@ export default function AdminOrdersPage() {
         <SummaryCard label="Completados" value={orders.filter(o => o.status === 'Completado').length} color="text-green-600" />
         <SummaryCard label="Cancelados" value={orders.filter(o => o.status === 'Cancelado').length} color="text-red-600" />
       </div>
+      
+      {/* Componente de diagnóstico */}
+      <OrderDiagnostics />
     </div>
   );
 }

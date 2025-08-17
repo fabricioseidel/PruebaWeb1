@@ -75,7 +75,7 @@ describe('CartContext', () => {
     );
 
     expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
-    expect(screen.getByTestId('cart-total')).toHaveTextContent('10');
+    expect(screen.getByTestId('cart-total')).toHaveTextContent('0');
 
     // Add product to cart
     fireEvent.click(screen.getByTestId('add-button'));
@@ -98,7 +98,7 @@ describe('CartContext', () => {
     
     await waitFor(() => {
       expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('cart-total')).toHaveTextContent('10');
+      expect(screen.getByTestId('cart-total')).toHaveTextContent('0');
     });
   });
 });

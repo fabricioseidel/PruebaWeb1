@@ -33,6 +33,7 @@ interface ProductContextType {
   loading: boolean;
   trackProductView: (id: string) => void;
   trackOrderIntent: (id: string | string[]) => void;
+  refreshFromDatabase: () => Promise<void>;
 }
 
 // Crear el contexto
@@ -356,6 +357,32 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
     setProducts(prev => prev.map(p => ids.includes(p.id) ? { ...p, orderClicks: (p.orderClicks ?? 0) + 1 } : p));
   }, []);
+
+  // Cargar productos desde la base de datos
+  const refreshFromDatabase = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/products');
+      if (response.ok) {
+        const dbProducts = await response.json();
+        if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+          // Normalizar productos de la base de datos para incluir campos de métricas
+          const normalizedDbProducts: Product[] = dbProducts.map((p: any) => ({
+            ...p,
+            viewCount: p.viewCount ?? 0,
+            orderClicks: p.orderClicks ?? 0,
+          }));
+          setProducts(normalizedDbProducts);
+          // Actualizar localStorage con los productos de la base de datos
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedDbProducts));
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing products from database:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   
   // Valores del contexto
   const contextValue: ProductContextType = {
@@ -366,8 +393,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     getProductById,
     getProductBySlug,
     loading,
-  trackProductView,
-  trackOrderIntent,
+    trackProductView,
+    trackOrderIntent,
+    refreshFromDatabase,
   };
   
   return <ProductContext.Provider value={contextValue}>{children}</ProductContext.Provider>;

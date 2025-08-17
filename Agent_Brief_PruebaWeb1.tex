@@ -1,0 +1,229 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framerule=0.2pt
+}
+
+\title{Agent Brief \& Pasos de Endurecimiento — \texttt{fabricioseidel/PruebaWeb1}}
+\author{OLIVOMARKET / Fabricio Seidel}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Contexto}
+\begin{itemize}[leftmargin=*]
+  \item Repo: \href{https://github.com/fabricioseidel/PruebaWeb1}{\texttt{github.com/fabricioseidel/PruebaWeb1}}
+  \item Rama de trabajo: \texttt{chore/hardening-files} (ya existe con: \texttt{.github/workflows/ci.yml}, \texttt{src/app/robots.ts}, \texttt{src/app/sitemap.ts}, \texttt{.env.example}).
+  \item Entorno: Windows + Git Bash (avisos de CRLF son normales).
+\end{itemize}
+
+\section*{Objetivo}
+\begin{enumerate}[label=\arabic*., leftmargin=*]
+  \item Dejar el repo listo con:
+  \begin{itemize}
+    \item \texttt{.env.example} versionado y permitido por \texttt{.gitignore}.
+    \item Seed de Prisma con \(\sim\)15 productos base OlivoMarket.
+    \item Scripts en \texttt{package.json} para \texttt{seed} y \texttt{typecheck}.
+    \item README actualizado (ruta correcta + instrucciones env/seed + badge CI).
+  \end{itemize}
+  \item Verificación local: \texttt{npm ci}, \texttt{npm run typecheck}, \texttt{npm test} (si existen) y \texttt{npm run build}.
+  \item Commitear y pushear a \texttt{chore/hardening-files} y dejar PR creado contra \texttt{main}.
+\end{enumerate}
+
+\section*{Reglas}
+\begin{itemize}[leftmargin=*]
+  \item No sobrescribas contenido existente a menos que se indique.
+  \item Pasos idempotentes: si el archivo ya existe, respétalo; si falta, créalo.
+  \item Si el modelo Prisma no coincide, reporta y detente con mensaje claro (no inventes campos).
+\end{itemize}
+
+\section*{Pasos Detallados}
+
+\subsection*{0) Preparación Git (si hace falta)}
+\begin{lstlisting}[language=bash]
+git checkout chore/hardening-files
+git pull
+git config core.autocrlf true
+\end{lstlisting}
+
+\subsection*{1) Permitir \texttt{.env.example} en \texttt{.gitignore} (si no está)}
+\begin{lstlisting}[language=bash]
+# Añade la excepción solo si no existe
+if ! grep -qx '!.env.example' .gitignore 2>/dev/null; then
+  printf '\n!.env.example\n' >> .gitignore
+  git add .gitignore
+  git commit -m "chore: allow .env.example via .gitignore"
+fi
+\end{lstlisting}
+
+\subsection*{2) Crear/asegurar seed de Prisma}
+Crea \texttt{prisma/seed.js} solo si no existe, con el siguiente contenido:
+
+\begin{lstlisting}[language=JavaScript]
+// prisma/seed.js
+/**
+ * Prisma seed para productos base (OlivoMarket).
+ * Ajusta nombres de modelo/campos si tu schema es distinto.
+ */
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+const products = [
+  { sku: 'HPAN-BLANCA-1KG',  name: 'Harina PAN Blanca 1kg',         category: 'Abarrotes',  priceCLP: 2000, stock: 30 },
+  { sku: 'HPAN-AMARILLA-1KG',name: 'Harina PAN Amarilla 1kg',       category: 'Abarrotes',  priceCLP: 2000, stock: 25 },
+  { sku: 'TEQU-QUESO-10U',   name: 'Tequeños de Queso (10u)',       category: 'Congelados', priceCLP: 4500, stock: 20 },
+  { sku: 'PAN-MARRA-4U',     name: 'Marraqueta (4u)',               category: 'Panadería',  priceCLP: 1200, stock: 15 },
+  { sku: 'PAN-HAMB-6U',      name: 'Pan de Hamburguesa (6u)',       category: 'Panadería',  priceCLP: 1500, stock: 12 },
+  { sku: 'QUES-LLAN-250',    name: 'Queso Llanero 250g',            category: 'Quesos',     priceCLP: 4500, stock: 10 },
+  { sku: 'QUES-MANO-250',    name: 'Queso de Mano 250g',            category: 'Quesos',     priceCLP: 5000, stock: 10 },
+  { sku: 'QUES-GAUDA-250',   name: 'Queso Gauda 250g',              category: 'Quesos',     priceCLP: 3800, stock: 14 },
+  { sku: 'BEB-COCA-2L',      name: 'Coca-Cola 2L',                  category: 'Bebidas',    priceCLP: 1800, stock: 40 },
+  { sku: 'BEB-SPRITE-1.5L',  name: 'Sprite 1.5L',                   category: 'Bebidas',    priceCLP: 1500, stock: 36 },
+  { sku: 'BEB-FANTA-1.5L',   name: 'Fanta 1.5L',                    category: 'Bebidas',    priceCLP: 1500, stock: 36 },
+  { sku: 'AGUA-BENE-2L',     name: 'Agua Benedictino 2L (sin gas)', category: 'Agua',       priceCLP: 1100, stock: 30 },
+  { sku: 'HIELO-2KG',        name: 'Bolsa de Hielo 2kg',            category: 'Hielo',      priceCLP: 1200, stock: 22 },
+  { sku: 'CAFE-MOL-250',     name: 'Café Molido 250g',              category: 'Café',       priceCLP: 3500, stock: 18 },
+  { sku: 'POST-ALFAJOR',     name: 'Alfajor Individual',            category: 'Postres',    priceCLP: 900,  stock: 24 },
+];
+
+async function main() {
+  console.log('🌱 Seeding...');
+  for (const p of products) {
+    await prisma.product.upsert({
+      where: { sku: p.sku },    // requiere @unique en sku
+      update: p,
+      create: p,
+    });
+    console.log('✔', p.sku);
+  }
+  console.log('✅ Listo');
+}
+
+main()
+  .catch(e => { console.error('❌ Seed error:', e); process.exit(1); })
+  .finally(async () => { await prisma.$disconnect(); });
+\end{lstlisting}
+
+Si el modelo Prisma no existe o no coincide, reporta y sugiere este bloque para el \texttt{schema.prisma} (no lo apliques sin confirmación explícita):
+\begin{lstlisting}
+model Product {
+  id        String   @id @default(cuid())
+  sku       String   @unique
+  name      String
+  category  String
+  priceCLP  Int
+  stock     Int      @default(0)
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+\end{lstlisting}
+
+\subsection*{3) Scripts en \texttt{package.json} (idempotentes)}
+\begin{lstlisting}[language=bash]
+npm pkg set scripts.typecheck="tsc --noEmit"
+npm pkg set scripts.seed="node prisma/seed.js"
+npm pkg set prisma.seed="node prisma/seed.js"
+\end{lstlisting}
+
+\subsection*{4) README — actualizaciones mínimas}
+\begin{itemize}
+  \item Corregir ruta del \texttt{cd} si aún dice \texttt{tienda-web} \(\rightarrow\) \texttt{PruebaWeb1}.
+  \item Añadir sección de variables de entorno y seed.
+  \item (Opcional) Añadir badge de CI.
+\end{itemize}
+
+\noindent
+Patch sugerido (aplicar solo si corresponde):
+\begin{lstlisting}
+--- a/README.md
++++ b/README.md
+@@
+-    git clone https://github.com/fabricioseidel/PruebaWeb1.git
+-    cd tienda-web
++    git clone https://github.com/fabricioseidel/PruebaWeb1.git
++    cd PruebaWeb1
+
++### Variables de entorno
++1. Copia `.env.example` → `.env.local` y completa valores reales:
++   - `NEXTAUTH_URL=http://localhost:3000`
++   - `NEXTAUTH_SECRET=<string seguro>`
++   - `AUTH_TRUST_HOST=true`
++   - `DATABASE_URL="file:./dev.db"`
++
++### Seed de desarrollo
++```bash
++npx prisma generate
++npx prisma db push        # o npx prisma migrate dev -n seed
++npm run seed
++```
+\end{lstlisting}
+
+Badge CI (opc.): 
+\begin{lstlisting}
+![CI](https://github.com/fabricioseidel/PruebaWeb1/actions/workflows/ci.yml/badge.svg)
+\end{lstlisting}
+
+\subsection*{5) Aplicar schema a la DB (local)}
+\begin{lstlisting}[language=bash]
+npx prisma generate
+npx prisma db push   # o: npx prisma migrate dev -n seed
+\end{lstlisting}
+
+\subsection*{6) Ejecutar seed}
+\begin{lstlisting}[language=bash]
+npm run seed
+\end{lstlisting}
+
+\subsection*{7) Verificación local}
+\begin{lstlisting}[language=bash]
+npm ci
+npm run typecheck
+npm test || echo "tests no definidos, continuando"
+npm run build
+\end{lstlisting}
+
+\subsection*{8) Commit, push y PR}
+\begin{lstlisting}[language=bash]
+git add -A
+git commit -m "chore: Prisma seed + scripts; docs: README env/seed; misc: typecheck"
+git push
+
+# Crear/actualizar PR: base main <- compare chore/hardening-files
+\end{lstlisting}
+
+\section*{Criterios de aceptación}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{prisma/seed.js} existe y corre sin errores (\texttt{Product} con \texttt{sku @unique}).
+  \item \texttt{package.json} tiene scripts \texttt{typecheck} y \texttt{seed}.
+  \item README corrige ruta y documenta env + seed.
+  \item CI corre \texttt{typecheck}, \texttt{lint}, \texttt{test} (si hay) y \texttt{build}.
+  \item PR abierto en \texttt{chore/hardening-files} con CI en verde.
+\end{itemize}
+
+\section*{Entregables}
+\begin{itemize}[leftmargin=*]
+  \item Commits en \texttt{chore/hardening-files}.
+  \item Pull Request contra \texttt{main} con descripción de cambios.
+  \item Logs de CI exitosos.
+\end{itemize}
+
+\section*{Notas}
+\begin{itemize}[leftmargin=*]
+  \item En Git Bash, el carácter \texttt{!} puede romper \texttt{printf}; usa comillas simples: \texttt{printf '\textbackslash n!.env.example\textbackslash n' >> .gitignore}.
+  \item Avisos de CRLF son benignos en Windows.
+  \item No subas tu \texttt{.env} real; usa \texttt{.env.local} en tu máquina.
+\end{itemize}
+
+\end{document}
