@@ -35,8 +35,8 @@ interface ProductContextType {
   trackOrderIntent: (id: string | string[]) => void;
 }
 
-// Crear el contexto
-const ProductContext = createContext<ProductContextType | undefined>(undefined);
+// Crear el contexto (export para tests)
+export const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 // Datos iniciales adaptados a OLIVOMARKET (minimarket venezolano en Chile)
 // Categorías principales: Bebidas, Panes, Víveres, Helados, Quesos, Cecinas, Mascotas, Higiene, Aseo

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import Navbar from '../components/layout/Navbar';
 import { vi } from 'vitest';
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));

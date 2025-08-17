@@ -74,13 +74,15 @@ describe('CartContext', () => {
       </CartProvider>
     );
 
-    expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
-    expect(screen.getByTestId('cart-total')).toHaveTextContent('10');
+  // Inicialmente carrito vacío: subtotal 0, envío 0, total 0
+  expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
+  expect(screen.getByTestId('cart-total')).toHaveTextContent('0');
 
     // Add product to cart
     fireEvent.click(screen.getByTestId('add-button'));
     
     await waitFor(() => {
+      // 1 item de 100 + shipping 10 => total 110
       expect(screen.getByTestId('cart-count')).toHaveTextContent('1');
       expect(screen.getByTestId('cart-total')).toHaveTextContent('110');
       expect(screen.getByTestId('cart-item-1')).toBeInTheDocument();
@@ -90,15 +92,24 @@ describe('CartContext', () => {
     fireEvent.click(screen.getByTestId('update-button'));
     
     await waitFor(() => {
+      // 2 * 100 + shipping 10 = 210
       expect(screen.getByTestId('cart-total')).toHaveTextContent('210');
+    });
+
+    // Remove product
+    fireEvent.click(screen.getByTestId('remove-button'));
+    await waitFor(() => {
+      expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
+      expect(screen.getByTestId('cart-total')).toHaveTextContent('0');
     });
 
     // Clear cart
     fireEvent.click(screen.getByTestId('clear-button'));
     
     await waitFor(() => {
+      // ya estaba vacío; sigue total 0
       expect(screen.getByTestId('cart-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('cart-total')).toHaveTextContent('10');
+      expect(screen.getByTestId('cart-total')).toHaveTextContent('0');
     });
   });
 });

@@ -49,8 +49,8 @@ export default function DebugCategoriesPage() {
   const productCategories = useMemo(() => {
     const categorySet = new Set<string>();
     products.forEach(p => {
-      if (p.category) {
-        categorySet.add(p.category);
+      if (Array.isArray(p.categories)) {
+        p.categories.forEach(cat => categorySet.add(cat));
       }
     });
     return Array.from(categorySet).sort();
@@ -73,8 +73,10 @@ export default function DebugCategoriesPage() {
   const productCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     products.forEach(p => {
-      if (p.category) {
-        counts[p.category] = (counts[p.category] || 0) + 1;
+      if (Array.isArray(p.categories)) {
+        p.categories.forEach(cat => {
+          counts[cat] = (counts[cat] || 0) + 1;
+        });
       }
     });
     return counts;

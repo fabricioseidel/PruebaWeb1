@@ -56,7 +56,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   // Obtener productos relacionados
   // Si en ProductContext no existe relatedProducts, derivar algunos similares por categoría
   const relatedProducts: Product[] = products
-    .filter(p => p.id !== product.id && p.category === product.category)
+    .filter(p => p.id !== product.id && p.categories?.some(cat => product.categories?.includes(cat)))
     .slice(0,4);
 
   // Manejar la cantidad
@@ -143,7 +143,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
             <div className="text-sm text-gray-500 mb-4">
-              Categoría: <span className="font-medium">{product.category}</span>
+              Categorías: <span className="font-medium">{product.categories?.join(', ')}</span>
             </div>
             <div className="text-2xl font-bold text-blue-600 mb-4 flex items-center gap-3">
               <span>$ {product.price.toFixed(2)}</span>
