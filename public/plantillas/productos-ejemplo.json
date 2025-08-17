@@ -1,0 +1,162 @@
+[
+  {
+    "name": "Harina P.A.N. Blanca 1kg",
+    "description": "Harina de maíz precocida, ideal para arepas, empanadas y hallacas. Producto 100% venezolano.",
+    "price": 45.99,
+    "stock": 150,
+    "categories": ["Abarrotes"],
+    "image": "/productos/harina-pan-blanca.jpg"
+  },
+  {
+    "name": "Harina P.A.N. Amarilla 1kg",
+    "description": "Harina de maíz amarillo precocida, perfecta para arepas con sabor tradicional venezolano.",
+    "price": 47.50,
+    "stock": 120,
+    "categories": ["Abarrotes"],
+    "image": "/productos/harina-pan-amarilla.jpg"
+  },
+  {
+    "name": "Maltín Polar 330ml",
+    "description": "Bebida de malta, refrescante y nutritiva. Sabor tradicional venezolano desde 1953.",
+    "price": 38.01,
+    "stock": 200,
+    "categories": ["Bebidas"],
+    "image": "/productos/malta-polar.jpg"
+  },
+  {
+    "name": "Queso Llanero 500g",
+    "description": "Queso blanco fresco de los llanos venezolanos. Ideal para desayunos y meriendas.",
+    "price": 79.50,
+    "stock": 80,
+    "categories": ["Quesos"],
+    "image": "/productos/queso-llanero.jpg"
+  },
+  {
+    "name": "Cachitos de Jamón y Queso (6 unidades)",
+    "description": "Deliciosos cachitos rellenos de jamón y queso. Perfectos para el desayuno o la merienda.",
+    "price": 65.00,
+    "stock": 50,
+    "categories": ["Panadería"],
+    "image": "/productos/cachitos.jpg"
+  },
+  {
+    "name": "Golfeados con Dulce de Papelón (4 unidades)",
+    "description": "Tradicional dulce venezolano enrollado con queso blanco y papelón. Sabor único e inconfundible.",
+    "price": 59.99,
+    "stock": 30,
+    "categories": ["Panadería", "Postres"],
+    "image": "/productos/golfeados.jpg"
+  },
+  {
+    "name": "Chicha en Polvo Yukery (900g)",
+    "description": "Preparado para chicha criolla venezolana. Solo agregar agua y azúcar al gusto.",
+    "price": 42.75,
+    "stock": 90,
+    "categories": ["Bebidas"],
+    "image": "/productos/chicha-yukery.jpg"
+  },
+  {
+    "name": "Papelón en Panela 500g",
+    "description": "Azúcar de caña integral en panela. Tradicional endulzante venezolano para bebidas y postres.",
+    "price": 28.50,
+    "stock": 110,
+    "categories": ["Abarrotes"],
+    "image": "/productos/papelon-panela.jpg"
+  },
+  {
+    "name": "Aceite Mazeite 1 Litro",
+    "description": "Aceite vegetal refinado de primera calidad. Ideal para cocinar y freír.",
+    "price": 34.99,
+    "stock": 85,
+    "categories": ["Abarrotes"],
+    "image": "/productos/aceite-mazeite.jpg"
+  },
+  {
+    "name": "Café Fama de América 500g",
+    "description": "Café tostado y molido de los mejores granos venezolanos. Aroma y sabor inconfundibles.",
+    "price": 67.25,
+    "stock": 75,
+    "categories": ["Café"],
+    "image": "/productos/cafe-fama-america.jpg"
+  },
+  {
+    "name": "Sardinas La Gaviota en Salsa de Tomate",
+    "description": "Sardinas en salsa de tomate, listas para consumir. Rico en proteínas y omega-3.",
+    "price": 22.90,
+    "stock": 150,
+    "categories": ["Abarrotes"],
+    "image": "/productos/sardinas-gaviota.jpg"
+  },
+  {
+    "name": "Arroz Primor 1kg",
+    "description": "Arroz blanco de grano largo de primera calidad. Base perfecta para cualquier comida.",
+    "price": 39.99,
+    "stock": 200,
+    "categories": ["Abarrotes"],
+    "image": "/productos/arroz-primor.jpg"
+  },
+  {
+    "name": "Caraotas Negras La Isleña 500g",
+    "description": "Frijoles negros de primera calidad. Ingrediente esencial del pabellón criollo venezolano.",
+    "price": 31.50,
+    "stock": 140,
+    "categories": ["Abarrotes"],
+    "image": "/productos/caraotas-islena.jpg"
+  },
+  {
+    "name": "Margarina Mavesa 500g",
+    "description": "Margarina vegetal cremosa, perfecta para untar y cocinar. Sabor suave y consistencia ideal.",
+    "price": 26.75,
+    "stock": 95,
+    "categories": ["Abarrotes"],
+    "image": "/productos/margarina-mavesa.jpg"
+  },
+  {
+    "name": "Mayonesa Kraft 946ml",
+    "description": "Mayonesa cremosa de excelente sabor. Perfecta para ensaladas, sándwiches y preparaciones.",
+    "price": 44.80,
+    "stock": 70,
+    "categories": ["Abarrotes"],
+    "image": "/productos/mayonesa-kraft.jpg"
+  },
+  {
+    "name": "Pan Tostado Bimbo Integral",
+    "description": "Pan tostado integral rico en fibra. Ideal para desayunos saludables y nutritivos.",
+    "price": 18.90,
+    "stock": 60,
+    "categories": ["Panadería"],
+    "image": "/productos/pan-tostado-bimbo.jpg"
+  },
+  {
+    "name": "Leche en Polvo Klim 400g",
+    "description": "Leche en polvo fortificada con vitaminas y minerales. Ideal para toda la familia.",
+    "price": 52.99,
+    "stock": 100,
+    "categories": ["Abarrotes"],
+    "image": "/productos/leche-klim.jpg"
+  },
+  {
+    "name": "Chocolate en Polvo Toddy 400g",
+    "description": "Chocolate en polvo fortificado con vitaminas. Perfecto para bebidas calientes o frías.",
+    "price": 36.50,
+    "stock": 80,
+    "categories": ["Bebidas"],
+    "image": "/productos/chocolate-toddy.jpg"
+  },
+  {
+    "name": "Galletas Crackets Club Social",
+    "description": "Galletas de soda crujientes, perfectas para acompañar quesos, embutidos o untables.",
+    "price": 21.25,
+    "stock": 120,
+    "categories": ["Abarrotes"],
+    "image": "/productos/galletas-club-social.jpg"
+  },
+  {
+    "name": "Espaguetis Primor 500g",
+    "description": "Pasta de sémola de trigo duro. Textura perfecta y cocción uniforme garantizada.",
+    "price": 24.99,
+    "stock": 160,
+    "categories": ["Abarrotes"],
+    "image": "/productos/espaguetis-primor.jpg"
+  }
+]

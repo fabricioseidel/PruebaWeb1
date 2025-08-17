@@ -13,6 +13,7 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { normalizeImageUrl } from '@/utils/image';
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 // Definir tipo para las órdenes
@@ -106,7 +107,7 @@ export default function MiCuentaPage() {
           <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
             {session?.user?.image ? (
               <Image
-                src={session.user.image}
+                src={normalizeImageUrl(session.user.image)}
                 alt={session.user.name || "Usuario"}
                 width={64}
                 height={64}

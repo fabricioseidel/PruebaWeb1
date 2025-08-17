@@ -1,0 +1,837 @@
+[
+  {
+    "name": "Harina P.A.N. Blanca 1kg",
+    "description": "Harina de maíz precocida, ideal para arepas, empanadas y hallacas. Producto 100% venezolano.",
+    "price": 45.99,
+    "stock": 150,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Básicos"
+    ],
+    "image": "/productos/harina-pan-blanca.jpg"
+  },
+  {
+    "name": "Harina P.A.N. Amarilla 1kg",
+    "description": "Harina de maíz amarillo precocida, perfecta para arepas con sabor tradicional venezolano.",
+    "price": 47.5,
+    "stock": 120,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Básicos"
+    ],
+    "image": "/productos/harina-pan-amarilla.jpg"
+  },
+  {
+    "name": "Maltín Polar 330ml",
+    "description": "Bebida de malta, refrescante y nutritiva. Sabor tradicional venezolano desde 1953.",
+    "price": 38.01,
+    "stock": 200,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/malta-polar.jpg"
+  },
+  {
+    "name": "Queso Llanero 500g",
+    "description": "Queso blanco fresco de los llanos venezolanos. Ideal para desayunos y meriendas.",
+    "price": 79.5,
+    "stock": 80,
+    "categories": [
+      "Lácteos",
+      "Quesos"
+    ],
+    "image": "/productos/queso-llanero.jpg"
+  },
+  {
+    "name": "Cachitos de Jamón y Queso (6 unidades)",
+    "description": "Deliciosos cachitos rellenos de jamón y queso. Perfectos para el desayuno o la merienda.",
+    "price": 65.0,
+    "stock": 50,
+    "categories": [
+      "Panadería",
+      "Productos Horneados"
+    ],
+    "image": "/productos/cachitos.jpg"
+  },
+  {
+    "name": "Golfeados con Dulce de Papelón (4 unidades)",
+    "description": "Tradicional dulce venezolano enrollado con queso blanco y papelón. Sabor único e inconfundible.",
+    "price": 59.99,
+    "stock": 30,
+    "categories": [
+      "Panadería",
+      "Dulces",
+      "Productos Horneados"
+    ],
+    "image": "/productos/golfeados.jpg"
+  },
+  {
+    "name": "Chicha en Polvo Yukery (900g)",
+    "description": "Preparado para chicha criolla venezolana. Solo agregar agua y azúcar al gusto.",
+    "price": 42.75,
+    "stock": 90,
+    "categories": [
+      "Bebidas",
+      "Bebidas en Polvo"
+    ],
+    "image": "/productos/chicha-yukery.jpg"
+  },
+  {
+    "name": "Papelón en Panela 500g",
+    "description": "Azúcar de caña integral en panela. Tradicional endulzante venezolano para bebidas y postres.",
+    "price": 28.5,
+    "stock": 110,
+    "categories": [
+      "Endulzantes",
+      "Productos Básicos"
+    ],
+    "image": "/productos/papelon-panela.jpg"
+  },
+  {
+    "name": "Aceite Mazeite 1 Litro",
+    "description": "Aceite vegetal refinado de primera calidad. Ideal para cocinar y freír.",
+    "price": 34.99,
+    "stock": 85,
+    "categories": [
+      "Aceites y Vinagres",
+      "Productos Básicos"
+    ],
+    "image": "/productos/aceite-mazeite.jpg"
+  },
+  {
+    "name": "Café Fama de América 500g",
+    "description": "Café tostado y molido de los mejores granos venezolanos. Aroma y sabor inconfundibles.",
+    "price": 67.25,
+    "stock": 75,
+    "categories": [
+      "Café y Té",
+      "Bebidas Calientes"
+    ],
+    "image": "/productos/cafe-fama-america.jpg"
+  },
+  {
+    "name": "Sardinas La Gaviota en Salsa de Tomate",
+    "description": "Sardinas en salsa de tomate, listas para consumir. Rico en proteínas y omega-3.",
+    "price": 22.9,
+    "stock": 150,
+    "categories": [
+      "Enlatados",
+      "Pescados y Mariscos"
+    ],
+    "image": "/productos/sardinas-gaviota.jpg"
+  },
+  {
+    "name": "Arroz Primor 1kg",
+    "description": "Arroz blanco de grano largo de primera calidad. Base perfecta para cualquier comida.",
+    "price": 39.99,
+    "stock": 200,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Básicos"
+    ],
+    "image": "/productos/arroz-primor.jpg"
+  },
+  {
+    "name": "Caraotas Negras La Isleña 500g",
+    "description": "Frijoles negros de primera calidad. Ingrediente esencial del pabellón criollo venezolano.",
+    "price": 31.5,
+    "stock": 140,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Básicos"
+    ],
+    "image": "/productos/caraotas-islena.jpg"
+  },
+  {
+    "name": "Margarina Mavesa 500g",
+    "description": "Margarina vegetal cremosa, perfecta para untar y cocinar. Sabor suave y consistencia ideal.",
+    "price": 26.75,
+    "stock": 95,
+    "categories": [
+      "Lácteos",
+      "Mantequillas y Margarinas"
+    ],
+    "image": "/productos/margarina-mavesa.jpg"
+  },
+  {
+    "name": "Mayonesa Kraft 946ml",
+    "description": "Mayonesa cremosa de excelente sabor. Perfecta para ensaladas, sándwiches y preparaciones.",
+    "price": 44.8,
+    "stock": 70,
+    "categories": [
+      "Salsas y Aderezos",
+      "Condimentos"
+    ],
+    "image": "/productos/mayonesa-kraft.jpg"
+  },
+  {
+    "name": "Pan Tostado Bimbo Integral",
+    "description": "Pan tostado integral rico en fibra. Ideal para desayunos saludables y nutritivos.",
+    "price": 18.9,
+    "stock": 60,
+    "categories": [
+      "Panadería",
+      "Productos Integrales"
+    ],
+    "image": "/productos/pan-tostado-bimbo.jpg"
+  },
+  {
+    "name": "Leche en Polvo Klim 400g",
+    "description": "Leche en polvo fortificada con vitaminas y minerales. Ideal para toda la familia.",
+    "price": 52.99,
+    "stock": 100,
+    "categories": [
+      "Lácteos",
+      "Leches en Polvo"
+    ],
+    "image": "/productos/leche-klim.jpg"
+  },
+  {
+    "name": "Chocolate en Polvo Toddy 400g",
+    "description": "Chocolate en polvo fortificado con vitaminas. Perfecto para bebidas calientes o frías.",
+    "price": 36.5,
+    "stock": 80,
+    "categories": [
+      "Bebidas",
+      "Chocolates en Polvo"
+    ],
+    "image": "/productos/chocolate-toddy.jpg"
+  },
+  {
+    "name": "Galletas Crackets Club Social",
+    "description": "Galletas de soda crujientes, perfectas para acompañar quesos, embutidos o untables.",
+    "price": 21.25,
+    "stock": 120,
+    "categories": [
+      "Galletas y Snacks",
+      "Aperitivos"
+    ],
+    "image": "/productos/galletas-club-social.jpg"
+  },
+  {
+    "name": "Espaguetis Primor 500g",
+    "description": "Pasta de sémola de trigo duro. Textura perfecta y cocción uniforme garantizada.",
+    "price": 24.99,
+    "stock": 160,
+    "categories": [
+      "Pastas",
+      "Productos Básicos"
+    ],
+    "image": "/productos/espaguetis-primor.jpg"
+  },
+  {
+    "name": "Coca-Cola 3L",
+    "description": "Bebida gaseosa sabor cola. Formato familiar de 3 litros.",
+    "price": 2600.0,
+    "stock": 48,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/coca-cola-3l.jpg"
+  },
+  {
+    "name": "Coca-Cola 1.5L",
+    "description": "Bebida gaseosa sabor cola, clásica y refrescante.",
+    "price": 1500.0,
+    "stock": 60,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/coca-cola-1-5l.jpg"
+  },
+  {
+    "name": "Sprite 2L",
+    "description": "Bebida gaseosa sabor lima-limón, sin colorantes.",
+    "price": 1800.0,
+    "stock": 54,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/sprite-2l.jpg"
+  },
+  {
+    "name": "Fanta 2L",
+    "description": "Bebida gaseosa sabor naranja. Refrescante y burbujeante.",
+    "price": 1800.0,
+    "stock": 54,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/fanta-2l.jpg"
+  },
+  {
+    "name": "Pepsi 2L",
+    "description": "Bebida gaseosa sabor cola. Ideal para compartir.",
+    "price": 1700.0,
+    "stock": 48,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/pepsi-2l.jpg"
+  },
+  {
+    "name": "Pepsi Zero 2L",
+    "description": "Bebida gaseosa sin azúcar. Sabor cola.",
+    "price": 1700.0,
+    "stock": 36,
+    "categories": [
+      "Bebidas",
+      "Sin Azúcar"
+    ],
+    "image": "/productos/pepsi-zero-2l.jpg"
+  },
+  {
+    "name": "Pepsi Zero Lata 350ml (12u)",
+    "description": "Pack de 12 latas de Pepsi Zero 350ml.",
+    "price": 7200.0,
+    "stock": 20,
+    "categories": [
+      "Bebidas",
+      "Pack"
+    ],
+    "image": "/productos/pepsi-zero-lata-12.jpg"
+  },
+  {
+    "name": "Inca Kola 1.5L",
+    "description": "Gaseosa sabor original. Formato 1.5 litros.",
+    "price": 1600.0,
+    "stock": 24,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/inca-kola-1-5l.jpg"
+  },
+  {
+    "name": "Kem 2L",
+    "description": "Bebida gaseosa variedad Kem 2 litros.",
+    "price": 1500.0,
+    "stock": 36,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/kem-2l.jpg"
+  },
+  {
+    "name": "Kem 3L",
+    "description": "Bebida gaseosa variedad Kem 3 litros.",
+    "price": 2100.0,
+    "stock": 24,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/kem-3l.jpg"
+  },
+  {
+    "name": "Pepsi 3L",
+    "description": "Bebida gaseosa sabor cola 3 litros.",
+    "price": 2300.0,
+    "stock": 24,
+    "categories": [
+      "Bebidas",
+      "Refrescos"
+    ],
+    "image": "/productos/pepsi-3l.jpg"
+  },
+  {
+    "name": "Agua Benedictino 500ml sin gas",
+    "description": "Agua purificada en formato 500 cc sin gas.",
+    "price": 353.0,
+    "stock": 96,
+    "categories": [
+      "Bebidas",
+      "Aguas"
+    ],
+    "image": "/productos/benedictino-500-sin-gas.jpg"
+  },
+  {
+    "name": "Agua Benedictino 2L sin gas",
+    "description": "Agua purificada 2 litros sin gas.",
+    "price": 1100.0,
+    "stock": 72,
+    "categories": [
+      "Bebidas",
+      "Aguas"
+    ],
+    "image": "/productos/benedictino-2l-sin-gas.jpg"
+  },
+  {
+    "name": "Agua Benedictino 2L con gas",
+    "description": "Agua purificada 2 litros con gas.",
+    "price": 1385.0,
+    "stock": 36,
+    "categories": [
+      "Bebidas",
+      "Aguas"
+    ],
+    "image": "/productos/benedictino-2l-con-gas.jpg"
+  },
+  {
+    "name": "Caja de Huevos Extra (30u)",
+    "description": "Huevos extra, bandeja de 30 unidades.",
+    "price": 39000.0,
+    "stock": 12,
+    "categories": [
+      "Abarrotes",
+      "Huevos"
+    ],
+    "image": "/productos/huevos-extra-30.jpg"
+  },
+  {
+    "name": "Yogur Aflanado Natural (4u)",
+    "description": "Pack de 4 yogures aflanados sabor natural.",
+    "price": 2900.0,
+    "stock": 20,
+    "categories": [
+      "Lácteos",
+      "Yogures"
+    ],
+    "image": "/productos/yogur-aflanado-4.jpg"
+  },
+  {
+    "name": "Pan Piñita Venezolano (8 bollitos)",
+    "description": "Pan dulce venezolano en 8 bollitos unidos, con azúcar superior ligera.",
+    "price": 2500.0,
+    "stock": 18,
+    "categories": [
+      "Panadería",
+      "Dulces"
+    ],
+    "image": "/productos/pan-pinita.jpg"
+  },
+  {
+    "name": "Pan de Molde Bimbo Blanco",
+    "description": "Pan de molde blanco, fresco y suave.",
+    "price": 2100.0,
+    "stock": 20,
+    "categories": [
+      "Panadería"
+    ],
+    "image": "/productos/pan-molde-bimbo.jpg"
+  },
+  {
+    "name": "Pan Hallulla",
+    "description": "Pan chileno tradicional, ideal para sándwich.",
+    "price": 800.0,
+    "stock": 30,
+    "categories": [
+      "Panadería"
+    ],
+    "image": "/productos/pan-hallulla.jpg"
+  },
+  {
+    "name": "Pan Amasado",
+    "description": "Pan amasado chileno, sabor casero.",
+    "price": 900.0,
+    "stock": 24,
+    "categories": [
+      "Panadería"
+    ],
+    "image": "/productos/pan-amasado.jpg"
+  },
+  {
+    "name": "Queso Mantecoso 250g",
+    "description": "Queso mantecoso chileno, ideal para fundir.",
+    "price": 3800.0,
+    "stock": 18,
+    "categories": [
+      "Lácteos",
+      "Quesos"
+    ],
+    "image": "/productos/queso-mantecoso-250.jpg"
+  },
+  {
+    "name": "Queso Gauda 500g",
+    "description": "Queso gauda en pieza, semimaduro.",
+    "price": 7200.0,
+    "stock": 12,
+    "categories": [
+      "Lácteos",
+      "Quesos"
+    ],
+    "image": "/productos/queso-gauda-500.jpg"
+  },
+  {
+    "name": "Queso Llanero 250g",
+    "description": "Queso blanco semiduro estilo llanero.",
+    "price": 2400.0,
+    "stock": 16,
+    "categories": [
+      "Lácteos",
+      "Quesos"
+    ],
+    "image": "/productos/queso-llanero-250.jpg"
+  },
+  {
+    "name": "Jamón de Pierna 250g",
+    "description": "Jamón de pierna laminado.",
+    "price": 2900.0,
+    "stock": 20,
+    "categories": [
+      "Cecinas",
+      "Embutidos"
+    ],
+    "image": "/productos/jamon-pierna-250.jpg"
+  },
+  {
+    "name": "Mortadela 250g",
+    "description": "Mortadela tradicional en láminas.",
+    "price": 2200.0,
+    "stock": 18,
+    "categories": [
+      "Cecinas",
+      "Embutidos"
+    ],
+    "image": "/productos/mortadela-250.jpg"
+  },
+  {
+    "name": "Salame 200g",
+    "description": "Salame en rebanadas, sabor intenso.",
+    "price": 3200.0,
+    "stock": 15,
+    "categories": [
+      "Cecinas",
+      "Embutidos"
+    ],
+    "image": "/productos/salame-200.jpg"
+  },
+  {
+    "name": "Tequeños de Queso (20u)",
+    "description": "Tequeños congelados de queso, pack familiar 20 unidades.",
+    "price": 8500.0,
+    "stock": 14,
+    "categories": [
+      "Congelados"
+    ],
+    "image": "/productos/tequenos-20.jpg"
+  },
+  {
+    "name": "Tequeños de Chocolate (10u)",
+    "description": "Tequeños rellenos de chocolate, congelados.",
+    "price": 5200.0,
+    "stock": 10,
+    "categories": [
+      "Congelados",
+      "Dulces"
+    ],
+    "image": "/productos/tequenos-choco-10.jpg"
+  },
+  {
+    "name": "Arepas Congeladas (10u)",
+    "description": "Arepas precocidas congeladas, pack de 10 unidades.",
+    "price": 5200.0,
+    "stock": 16,
+    "categories": [
+      "Congelados",
+      "Abarrotes"
+    ],
+    "image": "/productos/arepas-congeladas-10.jpg"
+  },
+  {
+    "name": "Empanadas de Queso (6u)",
+    "description": "Empanadas de queso congeladas listas para freír.",
+    "price": 4800.0,
+    "stock": 12,
+    "categories": [
+      "Congelados"
+    ],
+    "image": "/productos/empanadas-queso-6.jpg"
+  },
+  {
+    "name": "Hielo 5kg",
+    "description": "Bolsa de hielo 5 kilogramos.",
+    "price": 2200.0,
+    "stock": 20,
+    "categories": [
+      "Hielo"
+    ],
+    "image": "/productos/hielo-5kg.jpg"
+  },
+  {
+    "name": "Pan Tostado Bimbo Blanco",
+    "description": "Pan tostado clásico crujiente.",
+    "price": 1890.0,
+    "stock": 22,
+    "categories": [
+      "Panadería"
+    ],
+    "image": "/productos/pan-tostado-bimbo-blanco.jpg"
+  },
+  {
+    "name": "Leche Entera Liquida 1L",
+    "description": "Leche entera UHT 1 litro.",
+    "price": 1200.0,
+    "stock": 48,
+    "categories": [
+      "Lácteos",
+      "Leche"
+    ],
+    "image": "/productos/leche-entera-1l.jpg"
+  },
+  {
+    "name": "Leche Descremada Liquida 1L",
+    "description": "Leche descremada UHT 1 litro.",
+    "price": 1190.0,
+    "stock": 36,
+    "categories": [
+      "Lácteos",
+      "Leche"
+    ],
+    "image": "/productos/leche-descremada-1l.jpg"
+  },
+  {
+    "name": "Salsa de Tomate 380g",
+    "description": "Salsa de tomate clásica para pastas y preparaciones.",
+    "price": 1200.0,
+    "stock": 50,
+    "categories": [
+      "Salsas y Aderezos"
+    ],
+    "image": "/productos/salsa-tomate-380.jpg"
+  },
+  {
+    "name": "Mostaza 400g",
+    "description": "Mostaza clásica para sándwiches y asados.",
+    "price": 1150.0,
+    "stock": 40,
+    "categories": [
+      "Salsas y Aderezos"
+    ],
+    "image": "/productos/mostaza-400.jpg"
+  },
+  {
+    "name": "Salsa de Ajo 250ml",
+    "description": "Salsa de ajo cremosa, ideal para tequeños y arepas.",
+    "price": 1800.0,
+    "stock": 24,
+    "categories": [
+      "Salsas y Aderezos"
+    ],
+    "image": "/productos/salsa-ajo-250.jpg"
+  },
+  {
+    "name": "Platanitos 85g",
+    "description": "Chips de plátano crujientes.",
+    "price": 1200.0,
+    "stock": 40,
+    "categories": [
+      "Galletas y Snacks",
+      "Aperitivos"
+    ],
+    "image": "/productos/platanitos-85.jpg"
+  },
+  {
+    "name": "Chisitos 50g",
+    "description": "Snacks de maíz horneados.",
+    "price": 900.0,
+    "stock": 50,
+    "categories": [
+      "Galletas y Snacks",
+      "Aperitivos"
+    ],
+    "image": "/productos/chisitos-50.jpg"
+  },
+  {
+    "name": "Pirulin 27g (Display 24u)",
+    "description": "Barquillos rellenos de chocolate y avellanas, display 24 unidades.",
+    "price": 14800.0,
+    "stock": 10,
+    "categories": [
+      "Galletas y Snacks",
+      "Dulces"
+    ],
+    "image": "/productos/pirulin-display-24.jpg"
+  },
+  {
+    "name": "Caja de Alfajores (6u)",
+    "description": "Caja con 6 alfajores bañados en chocolate.",
+    "price": 5000.0,
+    "stock": 12,
+    "categories": [
+      "Postres",
+      "Dulces"
+    ],
+    "image": "/productos/alfajores-6.jpg"
+  },
+  {
+    "name": "Donas Glaseadas (4u)",
+    "description": "Pack de 4 donas glaseadas.",
+    "price": 3900.0,
+    "stock": 10,
+    "categories": [
+      "Panadería",
+      "Dulces"
+    ],
+    "image": "/productos/donas-4.jpg"
+  },
+  {
+    "name": "Muffins Vainilla (4u)",
+    "description": "Pack de 4 muffins sabor vainilla.",
+    "price": 3600.0,
+    "stock": 10,
+    "categories": [
+      "Panadería",
+      "Dulces"
+    ],
+    "image": "/productos/muffins-4.jpg"
+  },
+  {
+    "name": "Queque Porción",
+    "description": "Queque por porción individual.",
+    "price": 1200.0,
+    "stock": 20,
+    "categories": [
+      "Panadería",
+      "Dulces"
+    ],
+    "image": "/productos/queque-porcion.jpg"
+  },
+  {
+    "name": "Azúcar Blanca 1kg",
+    "description": "Azúcar refinada 1 kilogramo.",
+    "price": 1300.0,
+    "stock": 40,
+    "categories": [
+      "Abarrotes",
+      "Productos Básicos"
+    ],
+    "image": "/productos/azucar-1kg.jpg"
+  },
+  {
+    "name": "Sal Fina 1kg",
+    "description": "Sal yodada fina 1 kilogramo.",
+    "price": 700.0,
+    "stock": 40,
+    "categories": [
+      "Abarrotes",
+      "Productos Básicos"
+    ],
+    "image": "/productos/sal-1kg.jpg"
+  },
+  {
+    "name": "Harina de Trigo 1kg",
+    "description": "Harina de trigo multiuso 1 kilogramo.",
+    "price": 1400.0,
+    "stock": 36,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Básicos"
+    ],
+    "image": "/productos/harina-trigo-1kg.jpg"
+  },
+  {
+    "name": "Lentejas 1kg",
+    "description": "Lentejas secas 1 kilogramo.",
+    "price": 2100.0,
+    "stock": 30,
+    "categories": [
+      "Harinas y Granos",
+      "Legumbres"
+    ],
+    "image": "/productos/lentejas-1kg.jpg"
+  },
+  {
+    "name": "Atún en Agua 170g",
+    "description": "Atún en agua en lata 170g.",
+    "price": 1500.0,
+    "stock": 48,
+    "categories": [
+      "Enlatados",
+      "Pescados y Mariscos"
+    ],
+    "image": "/productos/atun-agua-170.jpg"
+  },
+  {
+    "name": "Maíz Dulce en Lata 300g",
+    "description": "Granos de maíz dulce en conserva.",
+    "price": 1200.0,
+    "stock": 36,
+    "categories": [
+      "Enlatados",
+      "Verduras"
+    ],
+    "image": "/productos/maiz-dulce-300.jpg"
+  },
+  {
+    "name": "Arroz Integral 1kg",
+    "description": "Arroz integral de grano largo.",
+    "price": 1800.0,
+    "stock": 40,
+    "categories": [
+      "Harinas y Granos",
+      "Productos Integrales"
+    ],
+    "image": "/productos/arroz-integral-1kg.jpg"
+  },
+  {
+    "name": "Fusilli 500g",
+    "description": "Pasta tipo fusilli de sémola de trigo duro.",
+    "price": 1600.0,
+    "stock": 34,
+    "categories": [
+      "Pastas",
+      "Productos Básicos"
+    ],
+    "image": "/productos/fusilli-500.jpg"
+  },
+  {
+    "name": "Papel Higiénico 4 Rollos",
+    "description": "Pack de 4 rollos de papel higiénico doble hoja.",
+    "price": 2500.0,
+    "stock": 24,
+    "categories": [
+      "Hogar"
+    ],
+    "image": "/productos/papel-higienico-4.jpg"
+  },
+  {
+    "name": "Detergente Líquido 3L",
+    "description": "Detergente líquido para ropa, 3 litros.",
+    "price": 6800.0,
+    "stock": 12,
+    "categories": [
+      "Hogar",
+      "Limpieza"
+    ],
+    "image": "/productos/detergente-3l.jpg"
+  },
+  {
+    "name": "Lavaloza 750ml",
+    "description": "Lavaloza concentrado 750 ml.",
+    "price": 1800.0,
+    "stock": 18,
+    "categories": [
+      "Hogar",
+      "Limpieza"
+    ],
+    "image": "/productos/lavaloza-750.jpg"
+  },
+  {
+    "name": "Alimento para Perro 1kg",
+    "description": "Alimento balanceado para perro adulto.",
+    "price": 4500.0,
+    "stock": 10,
+    "categories": [
+      "Mascotas"
+    ],
+    "image": "/productos/alimento-perro-1kg.jpg"
+  },
+  {
+    "name": "Arena para Gato 5kg",
+    "description": "Arena sanitaria aglutinante para gatos.",
+    "price": 5900.0,
+    "stock": 8,
+    "categories": [
+      "Mascotas"
+    ],
+    "image": "/productos/arena-gato-5kg.jpg"
+  }
+]

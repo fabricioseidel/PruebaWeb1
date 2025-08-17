@@ -62,7 +62,7 @@ export default function Home() {
             />
           ) : (
             <Image
-              src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=1920&auto=format&fit=crop"
+              src={normalizeImageUrl("https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=1920&auto=format&fit=crop")}
               alt="Minimarket venezolano con productos tradicionales"
               fill
               className="object-cover object-center"
@@ -119,7 +119,7 @@ export default function Home() {
                 <div className="relative h-48 overflow-hidden">
                   <div className="absolute inset-0 bg-emerald-900/40 group-hover:bg-emerald-900/25 transition-all z-10"></div>
                   <Image
-                      src={normalizeImageUrl(category.image)}
+                    src={normalizeImageUrl(category.image)}
                     alt={category.name}
                     fill
                     sizes="(max-width: 640px) 100vw, 25vw"
@@ -146,7 +146,7 @@ export default function Home() {
                   <div className="h-48 overflow-hidden">
                     <div className="relative w-full h-full">
                       <Image
-                        src={product.image}
+                        src={normalizeImageUrl(product.image)}
                         alt={product.name}
                         fill
                         sizes="(max-width: 640px) 100vw, 25vw"

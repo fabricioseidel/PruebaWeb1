@@ -1,0 +1,16 @@
+nombre,descripcion,precio,stock,categorias,imagen,destacado
+Harina de Arepas Blanca,"Harina precocida para arepas venezolanas, perfecta para el desayuno",3.50,100,"Venezolanos;Harinas;Abarrotes",/productos/harina-arepas.jpg,false
+Queso Guayanés,"Queso fresco venezolano, ideal para arepas y tequeños",8.99,50,"Venezolanos;Lácteos;Quesos",/productos/queso-guayanes.jpg,true
+Aceite de Girasol 1L,"Aceite vegetal premium para cocinar",4.25,75,"Abarrotes;Aceites;Cocina",/productos/aceite-girasol.jpg,false
+Pasta Italiana Spaghetti,"Pasta importada de Italia, ideal para cualquier salsa",2.80,120,"Pastas;Italianos;Abarrotes",/productos/spaghetti.jpg,false
+Café Colombiano Premium,"Café tostado y molido, origen Colombia",12.50,30,"Bebidas;Café;Colombianos;Premium",/productos/cafe-colombiano.jpg,true
+Pan de Jamón Venezolano,"Pan dulce navideño relleno de jamón, pasas y aceitunas",15.99,20,"Venezolanos;Panadería;Navideños",/productos/pan-jamon.jpg,true
+Tequeños de Queso,"Palitos de masa rellenos de queso blanco, perfectos para compartir",6.75,80,"Venezolanos;Aperitivos;Fritos",/productos/tequenos.jpg,false
+Arepa de Maíz Amarillo,"Arepa tradicional venezolana hecha con maíz amarillo",2.25,150,"Venezolanos;Panadería;Desayunos",/productos/arepa-amarilla.jpg,false
+Caraotas Negras,"Frijoles negros venezolanos cocidos, listos para servir",4.80,60,"Venezolanos;Conservas;Legumbres",/productos/caraotas.jpg,false
+Salsa de Ajo,"Salsa criolla venezolana picante con ajo",3.25,90,"Venezolanos;Salsas;Condimentos",/productos/salsa-ajo.jpg,false
+Chicha en Polvo,"Bebida tradicional venezolana sabor a arroz con canela",5.50,40,"Venezolanos;Bebidas;Postres",/productos/chicha-polvo.jpg,false
+Papelón Panela,"Azúcar de caña sin refinar, ideal para postres y bebidas",2.99,120,"Venezolanos;Endulzantes;Natural",/productos/papelon.jpg,false
+Empanadas Congeladas,"Empanadas venezolanas congeladas, variedad de rellenos",12.99,25,"Venezolanos;Congelados;Comida Rápida",/productos/empanadas-congeladas.jpg,true
+Malta Polar,"Bebida de malta venezolana sin alcohol",1.85,200,"Venezolanos;Bebidas;Refrescos",/productos/malta-polar.jpg,false
+Casabe,"Pan de yuca tradicional venezolano, libre de gluten",4.20,70,"Venezolanos;Panadería;Sin Gluten",/productos/casabe.jpg,false
